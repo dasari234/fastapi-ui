@@ -7,7 +7,7 @@ import React, {
     useState,
 } from "react";
 import { UtilService } from "../services/util-service";
-import Pagination from "./ui/Pagination";
+import Pagination from "./ui/pagination/Pagination";
 
 interface Column<T> {
   key: keyof T | string;

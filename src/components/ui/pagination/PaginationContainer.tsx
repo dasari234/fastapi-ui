@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import * as React from "react";
-import { cn } from "../../lib/utils";
-import { Button, type ButtonProps } from "./Button";
+import { cn } from "../../../lib/utils";
+import { Button, type ButtonProps } from "../Button";
 
 const PaginationRoot = ({
   className,
