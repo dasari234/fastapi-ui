@@ -70,7 +70,11 @@ const FileItem = ({ file, onRemove }: FileItemProps) => {
   );
 };
 
-export default function FileUpload() {
+export default function FileUpload({
+  onSuccess,
+}: {
+  onSuccess?: (message: string) => void;
+}) {
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -150,6 +154,9 @@ export default function FileUpload() {
       }
 
       console.log("Upload success:", result.message);
+      if (onSuccess) {
+        onSuccess(result.message || "Files uploaded successfully!");
+      }
       setFiles([]);
       setError(null);
     } catch (err) {
@@ -207,8 +214,8 @@ export default function FileUpload() {
           className="flex gap-2 mt-4 w-full bg-blue-500 text-white p-2 rounded-md font-medium hover:bg-blue-600 transition disabled:bg-blue-300"
           disabled={uploading}
         >
-          {uploading && <LoadingSpinner className="w-6 h-6" />}{" "}
-          Upload {files.length} File{files.length !== 1 ? "s" : ""}
+          {uploading && <LoadingSpinner className="w-6 h-6" />} Upload{" "}
+          {files.length} File{files.length !== 1 ? "s" : ""}
         </button>
       )}
     </div>

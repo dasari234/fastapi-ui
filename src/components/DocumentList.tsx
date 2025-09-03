@@ -1,13 +1,16 @@
 import { useRef } from "react";
 import { formatDate } from "../lib/utils";
 
+import { FileSpreadsheet, Trash2 } from "lucide-react";
 import S3Service from "../services/s3-service";
 import DynamicTable, { type DynamicTableRef } from "./DynamicTable";
+import FileUpload from "./FileUpload";
+import Tooltip from "./Tooltip";
 
 export default function DocumentList() {
   const tableRef = useRef<DynamicTableRef>(null);
 
-  interface FileRow {
+  interface FileRow extends Record<string, unknown> {
     id: number;
     original_filename: string;
     file_size: number;
@@ -20,7 +23,6 @@ export default function DocumentList() {
     console.log("View file", row);
   };
 
-   
   const handleDelete = async (row: FileRow) => {
     try {
       const response = await S3Service.deleteFile(row.s3_key || "");
@@ -32,8 +34,16 @@ export default function DocumentList() {
     }
   };
 
+  const handleUploadSuccess = (msg: string) => {
+    console.log("Upload success callback:", msg);
+    tableRef.current?.refresh();
+  };
+
   return (
     <>
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <FileUpload onSuccess={handleUploadSuccess} />
+      </div>
       <DynamicTable<FileRow>
         url="/files"
         ref={tableRef}
@@ -58,20 +68,24 @@ export default function DocumentList() {
             key: "actions",
             label: "Actions",
             render: (row) => (
-             <div className="flex gap-2">
-              <button
-                className="text-blue-500 hover:underline"
-                onClick={() => handleView(row)}
-              >
-                View
-              </button>
-              <button
-                className="text-red-500 hover:underline"
-                onClick={() => handleDelete(row)}
-              >
-                Delete
-              </button>
-            </div>
+              <div className="flex gap-2">
+                <button
+                  className="text-blue-500 hover:text-blue-700"
+                  onClick={() => handleView(row)}
+                >
+                  <Tooltip content="View" maxWidth="max-w-xl">
+                    <FileSpreadsheet className="size-3.5" />
+                  </Tooltip>
+                </button>
+                <button
+                  className="text-red-500 hover:text-red-700"
+                  onClick={() => handleDelete(row)}
+                >
+                  <Tooltip content="Delete" maxWidth="max-w-xl">
+                    <Trash2 className="size-3.5" />
+                  </Tooltip>
+                </button>
+              </div>
             ),
           },
         ]}

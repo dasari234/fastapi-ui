@@ -1,6 +1,5 @@
 // import { useEffect } from "react";
 import DocumentList from "./components/DocumentList";
-import FileUpload from "./components/FileUpload";
 import "./index.css";
 
 // import FileUploadService from "./services/file-upload-service";
@@ -21,9 +20,7 @@ function App() {
   return (
     <>
       <div className="card">
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-          <FileUpload />
-        </div>
+        
         <DocumentList />
       </div>
     </>
