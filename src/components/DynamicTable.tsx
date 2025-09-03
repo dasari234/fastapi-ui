@@ -7,7 +7,7 @@ import React, {
     useState,
 } from "react";
 import { UtilService } from "../services/util-service";
-import Pagination from "./Pagination";
+import Pagination from "./ui/Pagination";
 
 interface Column<T> {
   key: keyof T | string;
@@ -26,7 +26,7 @@ interface DynamicTableProps<T> {
 }
 
 function DynamicTableInner<T extends Record<string, unknown>>(
-  { url, columns, limit = 2 }: DynamicTableProps<T>,
+  { url, columns, limit = 25 }: DynamicTableProps<T>,
   ref: React.Ref<DynamicTableRef>
 ) {
   const [data, setData] = useState<T[]>([]);

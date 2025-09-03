@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { cn } from "../lib/utils";
+import { cn } from "../../lib/utils";
 
 type Placement = "top" | "bottom" | "left" | "right";
 type Trigger = "hover" | "click" | "focus";
@@ -26,9 +26,12 @@ export default function Tooltip({
   maxWidth = "max-w-xs",
 }: TooltipProps) {
   const [visible, setVisible] = useState(false);
+  const [actualPlacement, setActualPlacement] = useState<Placement>(placement);
   const showTimeout = useRef<number | null>(null);
   const hideTimeout = useRef<number | null>(null);
   const idRef = useRef(`tooltip-${Math.random().toString(36).slice(2, 9)}`);
+  const tooltipRef = useRef<HTMLSpanElement>(null);
+  const wrapperRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     return () => {
@@ -36,6 +39,41 @@ export default function Tooltip({
       if (hideTimeout.current) window.clearTimeout(hideTimeout.current);
     };
   }, []);
+
+  const calculatePosition = () => {
+    if (!tooltipRef.current || !wrapperRef.current) return placement;
+
+    const tooltipRect = tooltipRef.current.getBoundingClientRect();
+    const wrapperRect = wrapperRef.current.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Check if the preferred placement has enough space
+    switch (placement) {
+      case "top":
+        if (wrapperRect.top - tooltipRect.height < 0) {
+          return "bottom";
+        }
+        break;
+      case "bottom":
+        if (wrapperRect.bottom + tooltipRect.height > viewportHeight) {
+          return "top";
+        }
+        break;
+      case "left":
+        if (wrapperRect.left - tooltipRect.width < 0) {
+          return "right";
+        }
+        break;
+      case "right":
+        if (wrapperRect.right + tooltipRect.width > viewportWidth) {
+          return "left";
+        }
+        break;
+    }
+
+    return placement;
+  };
 
   const clearTimers = () => {
     if (showTimeout.current) {
@@ -50,6 +88,11 @@ export default function Tooltip({
 
   const show = (immediate = false) => {
     clearTimers();
+    
+    // Calculate position before showing
+    const newPlacement = calculatePosition();
+    setActualPlacement(newPlacement);
+    
     if (immediate) {
       setVisible(true);
       return;
@@ -80,24 +123,39 @@ export default function Tooltip({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trigger, visible]);
 
+  // Recalculate position when window is resized
+  useEffect(() => {
+    if (!visible) return;
+    
+    const handleResize = () => {
+      const newPlacement = calculatePosition();
+      setActualPlacement(newPlacement);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
+
   // placement classes
   const contentPosition = {
     top: "-translate-y-2 bottom-full mb-2 left-1/2 -translate-x-1/2",
     bottom: "translate-y-2 top-full mt-2 left-1/2 -translate-x-1/2",
     left: "right-full mr-2 top-1/2 -translate-y-1/2",
     right: "left-full ml-2 top-1/2 -translate-y-1/2",
-  }[placement];
+  }[actualPlacement];
 
   const arrowPosition = {
     top: "bottom-[-6px] left-1/2 -translate-x-1/2 rotate-45",
     bottom: "top-[-6px] left-1/2 -translate-x-1/2 rotate-45",
     left: "right-[-6px] top-1/2 -translate-y-1/2 rotate-45",
     right: "left-[-6px] top-1/2 -translate-y-1/2 rotate-45",
-  }[placement];
+  }[actualPlacement];
 
   const wrapperProps: Record<string, unknown> = {
     role: "presentation",
     className: "inline-block relative",
+    ref: wrapperRef,
   };
 
   if (trigger === "hover") {
@@ -125,6 +183,7 @@ export default function Tooltip({
       {child}
       <span
         id={idRef.current}
+        ref={tooltipRef}
         role="tooltip"
         aria-hidden={!visible}
         className={cn(

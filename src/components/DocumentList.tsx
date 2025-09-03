@@ -5,7 +5,7 @@ import { FileSpreadsheet, Trash2 } from "lucide-react";
 import S3Service from "../services/s3-service";
 import DynamicTable, { type DynamicTableRef } from "./DynamicTable";
 import FileUpload from "./FileUpload";
-import Tooltip from "./Tooltip";
+import Tooltip from "./ui/Tooltip";
 
 export default function DocumentList() {
   const tableRef = useRef<DynamicTableRef>(null);
@@ -63,6 +63,10 @@ export default function DocumentList() {
           {
             key: "upload_status",
             label: "Status",
+          },
+          {
+            key: "score",
+            label: "Score",
           },
           {
             key: "actions",

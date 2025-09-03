@@ -30,9 +30,9 @@ export class UtilService {
     }
   }
 
-  static async put<T, D>(url: string, data: D): Promise<T> {
+  static async put<T, D>(url: string, data: D, id:D): Promise<T> {
     try {
-      const response = await UseApi.request<T>(HttpMethod.PUT, url, { data });
+      const response = await UseApi.request<T>(HttpMethod.PUT, `${url}/${id}`, { data });
        if (response === undefined) {
         throw new Error("Response is undefined");
       }
