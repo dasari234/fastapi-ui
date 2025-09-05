@@ -1,4 +1,6 @@
 import DocumentList from "./components/DocumentList";
+import Footer from "./components/Footer";
+import Header from "./components/Header";
 // import { Dropdown } from "./components/ui/dropdown/Dropdown";
 // import { DropdownContent } from "./components/ui/dropdown/DropdownContent";
 // import { DropdownItem } from "./components/ui/dropdown/DropdownItem";
@@ -58,8 +60,20 @@ function App() {
           </DropdownItem>
         </DropdownContent>
       </Dropdown> */}
-      <div className="card">
-        <DocumentList />
+
+
+      <div className="min-h-screen flex flex-col">
+        <Header />
+
+        {/* Content */}
+        <main className="flex-1 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            {/* <h2 className="text-2xl font-semibold mb-4">Dashboard</h2> */}
+            <DocumentList />
+          </div>
+        </main>
+
+        <Footer />
       </div>
     </>
   );

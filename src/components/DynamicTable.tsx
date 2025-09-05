@@ -58,6 +58,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
 
       setTotalPages(totalPages);
       setData(rows);
+      console.log("Fetched data:", rows);
     } catch (err) {
       console.error("Fetch error:", err);
       setError("Failed to fetch data");

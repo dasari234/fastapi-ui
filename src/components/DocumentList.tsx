@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { formatDate } from "../lib/utils";
 
-import { FileSpreadsheet, Trash2 } from "lucide-react";
+import { Download, FileSpreadsheet, Trash2 } from "lucide-react";
 import S3Service from "../services/s3-service";
 import DynamicTable, { type DynamicTableRef } from "./DynamicTable";
 import FileUpload from "./FileUpload";
@@ -41,11 +41,12 @@ export default function DocumentList() {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="min-h-screen flex items-center justify-center">
         <FileUpload onSuccess={handleUploadSuccess} />
       </div>
       <DynamicTable<FileRow>
         url="/files"
+        limit={10}
         ref={tableRef}
         columns={[
           { key: "id", label: "ID" },
@@ -72,13 +73,22 @@ export default function DocumentList() {
             key: "actions",
             label: "Actions",
             render: (row) => (
-              <div className="flex gap-2">
+              <div className="flex gap-4">
                 <button
                   className="text-blue-500 hover:text-blue-700"
                   onClick={() => handleView(row)}
                 >
                   <Tooltip content="View" maxWidth="max-w-xl">
                     <FileSpreadsheet className="size-3.5" />
+                  </Tooltip>
+                </button>
+
+                <button
+                  className="text-blue-500 hover:text-blue-700"
+                  onClick={() => handleView(row)}
+                >
+                  <Tooltip content="Download" maxWidth="max-w-xl">
+                    <Download  className="size-3.5" />
                   </Tooltip>
                 </button>
                 <button

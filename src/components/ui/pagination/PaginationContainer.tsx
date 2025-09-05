@@ -66,7 +66,7 @@ const PaginationPrevious = ({
   <PaginationLink
     aria-label="Go to previous page"
     className={cn(
-      "flex items-center gap-2 pl-3 pr-3 hover:bg-accent hover:text-blue-500",
+      "flex items-center gap-2 p-3 hover:bg-accent hover:text-blue-500",
       className
     )}
     {...props}
@@ -84,7 +84,7 @@ const PaginationNext = ({
    <PaginationLink
     aria-label="Go to next page"
     className={cn(
-      "flex items-center gap-2 pl-3 pr-3 hover:bg-accent hover:text-blue-500",
+      "flex items-center gap-2 p-3 hover:bg-accent hover:text-blue-500",
       className
     )}
     {...props}

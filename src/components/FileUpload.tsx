@@ -1,5 +1,5 @@
 import {
-  ArrowUpToLine,
+  CloudUpload,
   File as FileIcon,
   Image as ImageIcon,
   Music,
@@ -173,10 +173,13 @@ export default function FileUpload({
 
       {/* Upload Input */}
       <label className="flex flex-col items-center justify-center gap-2 rounded-md p-6 cursor-pointer bg-gray-200 hover:bg-gray-300 transition border-2 border-dashed border-gray-400">
-        <ArrowUpToLine className="w-8 h-8 text-gray-600" />
+        <CloudUpload className="w-8 h-8 text-gray-600" />
         <span className="text-gray-700 font-medium">Choose Files</span>
         <span className="text-sm text-gray-500">
           or drag and drop files here
+        </span>
+        <span className="text-sm text-gray-500">
+          PDF, DOCX, IMG, up to 50MB
         </span>
         <input
           ref={fileInputRef}
