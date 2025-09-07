@@ -10,10 +10,11 @@ import { UtilService } from "../services/util-service";
 import Pagination from "./ui/pagination/Pagination";
 
 interface Column<T> {
-  key: keyof T | string;
+  key: keyof T | string; // string so nested keys are allowed ("user.name")
   label: string;
   render?: (row: T) => React.ReactNode;
 }
+
 interface ApiResponse<T> {
   success: boolean;
   data?: {
@@ -21,6 +22,7 @@ interface ApiResponse<T> {
     total_pages?: number;
   };
 }
+
 export interface DynamicTableRef {
   refresh: () => void;
 }
@@ -31,13 +33,26 @@ interface DynamicTableProps<T> {
   limit?: number;
 }
 
+/**
+ * Utility to resolve nested keys (e.g., "user.name.first")
+ */
+function getNestedValue(obj: unknown, path: string): unknown {
+  return path.split(".").reduce((acc, part) => {
+    if (acc && typeof acc === "object" && acc !== null && part in acc) {
+      // TypeScript needs a type assertion here
+      return (acc as Record<string, unknown>)[part];
+    }
+    return undefined;
+  }, obj);
+}
+
 function DynamicTableInner<T extends Record<string, unknown>>(
   { url, columns, limit = 25 }: DynamicTableProps<T>,
   ref: React.Ref<DynamicTableRef>
 ) {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
-  const [showOverlay, setShowOverlay] = useState(true); // overlay by default
+  const [showOverlay, setShowOverlay] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -48,17 +63,11 @@ function DynamicTableInner<T extends Record<string, unknown>>(
       setShowOverlay(overlay);
       setLoading(true);
 
-      const response = await UtilService.get(
+      const response = (await UtilService.get(
         `${url}?limit=${limit}&page=${page}`
-      ) as ApiResponse<T>;
+      )) as ApiResponse<T>;
 
-      // Type guard for expected response shape
-      if (
-        typeof response === "object" &&
-        response !== null &&
-        "success" in response &&
-        typeof response.success === "boolean"
-      ) {
+      if (response && typeof response === "object" && "success" in response) {
         const rows =
           response.data && Array.isArray(response.data.records)
             ? response.data.records
@@ -71,9 +80,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
 
         setTotalPages(totalPages);
         setData(rows);
-        console.log("Fetched data:", rows);
       }
-
     } catch (err) {
       console.error("Fetch error:", err);
       setError("Failed to fetch data");
@@ -142,14 +149,26 @@ function DynamicTableInner<T extends Record<string, unknown>>(
                     key={idx}
                     className="hover:bg-gray-50 transition-colors duration-150"
                   >
-                    {headers.map((col) => (
-                      <td
-                        key={String(col.key)}
-                        className="px-4 py-2 text-sm text-gray-700 border-b"
-                      >
-                        {col.render ? col.render(row) : String(row[col.key] ?? "")}
-                      </td>
-                    ))}
+                    {headers.map((col) => {
+                      let value: React.ReactNode;
+                      if (col.render) {
+                        value = col.render(row);
+                      } else {
+                        const nested = getNestedValue(row, String(col.key));
+                        value = (nested !== undefined && nested !== null)
+                          ? String(nested)
+                          : "";
+                      }
+
+                      return (
+                        <td
+                          key={String(col.key)}
+                          className="px-4 py-2 text-sm text-gray-700 border-b"
+                        >
+                          {value !== undefined && value !== null ? value : ""}
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))
               ) : (
@@ -174,7 +193,6 @@ function DynamicTableInner<T extends Record<string, unknown>>(
           />
         </>
       )}
-
     </div>
   );
 }

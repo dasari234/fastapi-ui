@@ -121,17 +121,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // ------------------
 
   const refreshTokens = async () => {
+    debugger
     if (refreshInProgressRef.current) return;
     refreshInProgressRef.current = true;
 
-    const sessionStr = getLocalStorage(localStorageKeys.session);
-    if (!sessionStr) {
+    const session = getLocalStorage<Session>(localStorageKeys.session);
+    if (!session) {
       handleLogout();
       return;
     }
-debugger
+
     try {
-      const session: Session = typeof sessionStr === "string" ? JSON.parse(sessionStr) : {} as Session;
+
       const resp = await AuthService.refreshToken({ refresh_token: session.refresh_token }) as {
         access_token: string;
         refresh_token: string;

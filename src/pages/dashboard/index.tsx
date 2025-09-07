@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import type { DynamicTableRef } from "../../components/DynamicTable";
 import S3Service from "../../services/s3-service";
 import FileUpload from "../../components/FileUpload";
@@ -37,12 +37,72 @@ const DashboardPage: React.FC = () => {
 
     const handleUploadSuccess = (msg: string) => {
         console.log("Upload success callback:", msg);
+
         tableRef.current?.refresh();
     };
 
+    useEffect(() => {
+        document.title = "Dashboard";
+    }, []);
+
+    const columns = [
+        { key: "original_filename", label: "File Name" },
+        {
+            key: "file_size",
+            label: "Size (MB)",
+            render: (row: FileRow) => `${(row.file_size / 1000).toFixed(2)}`,
+        },
+        { key: "user_details.first_name", label: "Uploaded By" },
+        {
+            key: "created_at",
+            label: "Created At",
+            render: (row: FileRow) => formatDate(row.created_at),
+        },
+        {
+            key: "upload_status",
+            label: "Status",
+        },
+        {
+            key: "score",
+            label: "Score",
+        },
+        {
+            key: "actions",
+            label: "Actions",
+            render: (row: FileRow) => (
+                <div className="flex">
+                    <Button variant="ghost" size="icon"
+                        className="text-blue-500 hover:text-blue-700"
+                        onClick={() => handleView(row)}
+                    >
+                        <Tooltip content="View" maxWidth="max-w-xl">
+                            <FileSpreadsheet className="size-3.5" />
+                        </Tooltip>
+                    </Button>
+
+                    <Button variant="ghost" size="icon"
+                        className="text-blue-500 hover:text-blue-700"
+                        onClick={() => handleView(row)}
+                    >
+                        <Tooltip content="Download" maxWidth="max-w-xl">
+                            <Download className="size-3.5" />
+                        </Tooltip>
+                    </Button>
+                    <Button variant="ghost" size="icon"
+                        className="text-red-500 hover:text-red-700"
+                        onClick={() => handleDelete(row)}
+                    >
+                        <Tooltip content="Delete" maxWidth="max-w-xl">
+                            <Trash2 className="size-3.5" />
+                        </Tooltip>
+                    </Button>
+                </div>
+            ),
+        },
+    ];
+
     return (
         <>
-
             <div className="min-h-screen flex items-center justify-center">
                 <FileUpload onSuccess={handleUploadSuccess} />
             </div>
@@ -50,61 +110,7 @@ const DashboardPage: React.FC = () => {
                 url="/files"
                 limit={10}
                 ref={tableRef}
-                columns={[
-                    { key: "id", label: "ID" },
-                    { key: "original_filename", label: "File Name" },
-                    {
-                        key: "file_size",
-                        label: "Size (KB)",
-                        render: (row) => `${row.file_size} KB`,
-                    },
-                    {
-                        key: "created_at",
-                        label: "Created At",
-                        render: (row) => formatDate(row.created_at),
-                    },
-                    {
-                        key: "upload_status",
-                        label: "Status",
-                    },
-                    {
-                        key: "score",
-                        label: "Score",
-                    },
-                    {
-                        key: "actions",
-                        label: "Actions",
-                        render: (row) => (
-                            <div className="flex gap-4">
-                                <Button
-                                    className="text-blue-500 hover:text-blue-700"
-                                    onClick={() => handleView(row)}
-                                >
-                                    <Tooltip content="View" maxWidth="max-w-xl">
-                                        <FileSpreadsheet className="size-3.5" />
-                                    </Tooltip>
-                                </Button>
-
-                                <Button
-                                    className="text-blue-500 hover:text-blue-700"
-                                    onClick={() => handleView(row)}
-                                >
-                                    <Tooltip content="Download" maxWidth="max-w-xl">
-                                        <Download className="size-3.5" />
-                                    </Tooltip>
-                                </Button>
-                                <Button
-                                    className="text-red-500 hover:text-red-700"
-                                    onClick={() => handleDelete(row)}
-                                >
-                                    <Tooltip content="Delete" maxWidth="max-w-xl">
-                                        <Trash2 className="size-3.5" />
-                                    </Tooltip>
-                                </Button>
-                            </div>
-                        ),
-                    },
-                ]}
+                columns={columns}
             />
         </>
     );
