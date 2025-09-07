@@ -1,8 +1,9 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from "axios";
+import { getLocalStorage } from "../utils";
 
 let accessToken =
-  localStorage.getItem("accessToken") !== null
-    ? localStorage.getItem("accessToken")
+  getLocalStorage("accessToken") !== null
+    ? getLocalStorage("accessToken")
     : null;
 
 const config = {
@@ -16,8 +17,8 @@ const headers = (config: AxiosRequestConfig): AxiosRequestConfig => {
     config.headers = {};
   }
   accessToken =
-    localStorage.getItem("accessToken") !== null
-      ? localStorage.getItem("accessToken") || ""
+    getLocalStorage("accessToken") !== null
+      ? getLocalStorage("accessToken") || ""
       : null;
 
   if (accessToken !== null) {

@@ -152,7 +152,7 @@ export default function FileUpload({
       } else {
         result = await S3Service.fileUpload(formData);
       }
-
+      debugger
       console.log("Upload success:", result.message);
       if (onSuccess) {
         onSuccess(result.message || "Files uploaded successfully!");

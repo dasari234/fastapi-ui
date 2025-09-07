@@ -1,10 +1,10 @@
 import { Loader2 } from "lucide-react";
 import React, {
-    forwardRef,
-    useEffect,
-    useImperativeHandle,
-    useMemo,
-    useState,
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
 } from "react";
 import { UtilService } from "../services/util-service";
 import Pagination from "./ui/pagination/Pagination";
@@ -14,7 +14,13 @@ interface Column<T> {
   label: string;
   render?: (row: T) => React.ReactNode;
 }
-
+interface ApiResponse<T> {
+  success: boolean;
+  data?: {
+    records?: T[];
+    total_pages?: number;
+  };
+}
 export interface DynamicTableRef {
   refresh: () => void;
 }
@@ -44,21 +50,30 @@ function DynamicTableInner<T extends Record<string, unknown>>(
 
       const response = await UtilService.get(
         `${url}?limit=${limit}&page=${page}`
-      );
+      ) as ApiResponse<T>;
 
-      const rows =
-        response && typeof response === "object" && "data" in response
-          ? (response as { data: T[] }).data
-          : [];
+      // Type guard for expected response shape
+      if (
+        typeof response === "object" &&
+        response !== null &&
+        "success" in response &&
+        typeof response.success === "boolean"
+      ) {
+        const rows =
+          response.data && Array.isArray(response.data.records)
+            ? response.data.records
+            : [];
 
-      const totalPages =
-        response && typeof response === "object" && "total_pages" in response
-          ? (response as { total_pages: number }).total_pages
-          : 0;
+        const totalPages =
+          response.data && typeof response.data.total_pages === "number"
+            ? response.data.total_pages
+            : 0;
 
-      setTotalPages(totalPages);
-      setData(rows);
-      console.log("Fetched data:", rows);
+        setTotalPages(totalPages);
+        setData(rows);
+        console.log("Fetched data:", rows);
+      }
+
     } catch (err) {
       console.error("Fetch error:", err);
       setError("Failed to fetch data");
@@ -103,8 +118,6 @@ function DynamicTableInner<T extends Record<string, unknown>>(
 
       {error ? (
         <p className="text-red-500">{error}</p>
-      ) : data.length === 0 && !loading ? (
-        <p className="text-gray-600">No records found.</p>
       ) : (
         <>
           <table className="min-w-full border border-gray-200 bg-white shadow-md rounded-lg">
@@ -114,30 +127,43 @@ function DynamicTableInner<T extends Record<string, unknown>>(
                   <th
                     key={String(col.key)}
                     className="px-4 py-2 text-sm font-semibold text-gray-700 border-b"
+                    scope="col"
                   >
                     {col.label}
                   </th>
                 ))}
               </tr>
             </thead>
+
             <tbody>
-              {data.map((row, idx) => (
-                <tr
-                  key={idx}
-                  className="hover:bg-gray-50 transition-colors duration-150"
-                >
-                  {headers.map((col) => (
+              {data.length > 0 ? (
+                data.map((row, idx) => (
+                  <tr
+                    key={idx}
+                    className="hover:bg-gray-50 transition-colors duration-150"
+                  >
+                    {headers.map((col) => (
+                      <td
+                        key={String(col.key)}
+                        className="px-4 py-2 text-sm text-gray-700 border-b"
+                      >
+                        {col.render ? col.render(row) : String(row[col.key] ?? "")}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : (
+                !loading && (
+                  <tr>
                     <td
-                      key={String(col.key)}
-                      className="px-4 py-2 text-sm text-gray-700 border-b"
+                      colSpan={headers.length}
+                      className="py-4 text-center text-md text-gray-600"
                     >
-                      {col.render
-                        ? col.render(row)
-                        : String(row[col.key] ?? "")}
+                      No records found.
                     </td>
-                  ))}
-                </tr>
-              ))}
+                  </tr>
+                )
+              )}
             </tbody>
           </table>
 
@@ -148,6 +174,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
           />
         </>
       )}
+
     </div>
   );
 }

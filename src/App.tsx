@@ -1,6 +1,5 @@
-import DocumentList from "./components/DocumentList";
-import Footer from "./components/Footer";
-import Header from "./components/Header";
+import { useEffect } from "react";
+
 // import { Dropdown } from "./components/ui/dropdown/Dropdown";
 // import { DropdownContent } from "./components/ui/dropdown/DropdownContent";
 // import { DropdownItem } from "./components/ui/dropdown/DropdownItem";
@@ -8,6 +7,17 @@ import Header from "./components/Header";
 // import { DropdownSeparator } from "./components/ui/dropdown/DropdownSeparator";
 // import { DropdownTrigger } from "./components/ui/dropdown/DropdownTrigger";
 import "./index.css";
+import { BrowserRouter, useRoutes } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import { AuthProvider } from "./context/AuthProvider";
+import { useAuthContext } from "./hooks";
+import { authRoutes, nonAuthRoutes } from "./routes";
+
+const AppRoutes = () => {
+  const { isAuthenticated } = useAuthContext();
+  const routes = useRoutes(isAuthenticated ? authRoutes : nonAuthRoutes);
+  return routes;
+};
 
 function App() {
   // const handleProfileSelect = () => {
@@ -18,64 +28,77 @@ function App() {
   //   console.log("Logout clicked");
   // };
 
+  useEffect(() => {
+    console.info(`Application running in ${import.meta.env.VITE_MODE} mode.`);
+    // console.info("Git Commit:", __COMMIT_HASH__);
+    // console.log("Commit Date:", __COMMIT_DATE__);
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
-    <>
-      {/* <Dropdown onOpenChange={(isOpen) => console.log("Dropdown is:", isOpen)}>
-        <DropdownTrigger className="bg-blue-500 text-white hover:bg-blue-600">
-          Open Menu
-          <svg
-            className="ml-2 h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </DropdownTrigger>
+    <BrowserRouter>
+      <ToastContainer position="top-right" autoClose={2000} />
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
 
-        <DropdownContent align="start" sideOffset={8}>
-          <DropdownLabel>Account</DropdownLabel>
-          <DropdownItem onSelect={handleProfileSelect}>Profile</DropdownItem>
-          <DropdownItem onSelect={() => console.log("Settings clicked")}>
-            Settings
-          </DropdownItem>
+    //     <>
+    //       {/* <Dropdown onOpenChange={(isOpen) => console.log("Dropdown is:", isOpen)}>
+    //         <DropdownTrigger className="bg-blue-500 text-white hover:bg-blue-600">
+    //           Open Menu
+    //           <svg
+    //             className="ml-2 h-4 w-4"
+    //             fill="none"
+    //             stroke="currentColor"
+    //             viewBox="0 0 24 24"
+    //           >
+    //             <path
+    //               strokeLinecap="round"
+    //               strokeLinejoin="round"
+    //               strokeWidth={2}
+    //               d="M19 9l-7 7-7-7"
+    //             />
+    //           </svg>
+    //         </DropdownTrigger>
 
-          <DropdownSeparator />
+    //         <DropdownContent align="start" sideOffset={8}>
+    //           <DropdownLabel>Account</DropdownLabel>
+    //           <DropdownItem onSelect={handleProfileSelect}>Profile</DropdownItem>
+    //           <DropdownItem onSelect={() => console.log("Settings clicked")}>
+    //             Settings
+    //           </DropdownItem>
 
-          <DropdownLabel>Actions</DropdownLabel>
-          <DropdownItem onSelect={() => console.log("New project")}>
-            New Project
-          </DropdownItem>
-          <DropdownItem disabled>Delete (disabled)</DropdownItem>
+    //           <DropdownSeparator />
 
-          <DropdownSeparator />
+    //           <DropdownLabel>Actions</DropdownLabel>
+    //           <DropdownItem onSelect={() => console.log("New project")}>
+    //             New Project
+    //           </DropdownItem>
+    //           <DropdownItem disabled>Delete (disabled)</DropdownItem>
 
-          <DropdownItem onSelect={handleLogoutSelect}>
-            <span className="text-red-600">Logout</span>
-          </DropdownItem>
-        </DropdownContent>
-      </Dropdown> */}
+    //           <DropdownSeparator />
 
+    //           <DropdownItem onSelect={handleLogoutSelect}>
+    //             <span className="text-red-600">Logout</span>
+    //           </DropdownItem>
+    //         </DropdownContent>
+    //       </Dropdown> */}
 
-      <div className="min-h-screen flex flex-col">
-        <Header />
+    // {/* 
+    //       <div className="min-h-screen flex flex-col">
+    //         <Header />
 
-        {/* Content */}
-        <main className="flex-1 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            {/* <h2 className="text-2xl font-semibold mb-4">Dashboard</h2> */}
-            <DocumentList />
-          </div>
-        </main>
+    //         <main className="flex-1 bg-gray-50">
+    //           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    //             <h2 className="text-2xl font-semibold mb-4">Dashboard</h2>
+    //             <DocumentList />
+    //           </div>
+    //         </main>
 
-        <Footer />
-      </div>
-    </>
+    //         <Footer />
+    //       </div> */}
+    //     </>
   );
 }
 

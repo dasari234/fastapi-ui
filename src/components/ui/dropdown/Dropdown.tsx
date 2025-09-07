@@ -1,80 +1,112 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-import type { DropdownContextType, DropdownProps } from './types';
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 
+import { Avatar } from "../avatar/Avatar";
+import { useClickOutside } from "../../../hooks/use-click-outside";
+import { cn } from "../../../lib/utils";
 
-const DropdownContext = createContext<DropdownContextType | null>(null);
+type DropdownItem = {
+  label: string;
+  onClick: () => void;
+  icon?: React.ReactNode;
+  iconPosition?: "left" | "right";
+};
 
-export const Dropdown: React.FC<DropdownProps> = ({ children, onOpenChange }) => {
+type DropdownProps = {
+  text?: string;
+  items: DropdownItem[];
+  className?: string;
+};
+
+export function Dropdown({ text, items, className }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const toggle = () => {
-    const newState = !isOpen;
-    setIsOpen(newState);
-    onOpenChange?.(newState);
-  };
-
-  const close = () => {
-    setIsOpen(false);
-    onOpenChange?.(false);
-  };
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const [positionStyle, setPositionStyle] = useState<React.CSSProperties>({});
+  const toggleDropdown = () => setIsOpen((prev) => !prev);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        close();
-      }
-    };
+    if (isOpen && dropdownRef.current && buttonRef.current) {
+      const dropdownRect = dropdownRef.current.getBoundingClientRect();
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const screenWidth = window.innerWidth;
 
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        close();
-      }
-    };
+      const fitsRight = buttonRect.left + dropdownRect.width <= screenWidth;
 
-    const handleResize = () => {
-      if (isOpen) {
-        close();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside as unknown as EventListener);
-      document.addEventListener('keydown', handleEscape as unknown as EventListener);
-      window.addEventListener('resize', handleResize);
-      window.addEventListener('scroll', handleResize, true);
+      setPositionStyle(
+        fitsRight
+          ? {
+              top: `${buttonRef.current.offsetHeight}px`,
+              left: "0",
+              transform: "none",
+            }
+          : {
+              top: `${buttonRef.current.offsetHeight}px`,
+              right: "0",
+              left: "auto",
+              transform: "none",
+            }
+      );
     }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside as unknown as EventListener);
-      document.removeEventListener('keydown', handleEscape as unknown as EventListener);
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('scroll', handleResize, true);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  const value: DropdownContextType = {
-    isOpen,
-    toggle,
-    close,
-    dropdownRef
-  };
+  useClickOutside(
+    () => {
+      setIsOpen(false);
+    },
+    undefined,
+    [dropdownRef]
+  );
 
   return (
-    <DropdownContext.Provider value={value}>
-      <div ref={dropdownRef} className="relative inline-block text-left">
-        {children}
-      </div>
-    </DropdownContext.Provider>
-  );
-};
+    <div className="relative inline-block">
+      <button
+        ref={buttonRef}
+        onClick={toggleDropdown}
+        className="flex items-center space-x-2 px-4 py-2 transition duration-300 hover:bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <Avatar initials={text} />
+        {/* <span>{text}</span> */}
+        <ChevronDown className="text-gray-400"/>
+      </button>
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const useDropdown = (): DropdownContextType => {
-  const context = useContext(DropdownContext);
-  if (!context) {
-    throw new Error('Dropdown components must be used within a Dropdown');
-  }
-  return context;
-};
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            ref={dropdownRef}
+            style={positionStyle}
+            className={cn(
+              "absolute mt-2 w-48 bg-white border rounded-md shadow-lg z-10",
+              className
+            )}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ul className="py-2">
+              {items.map(
+                ({ label, onClick, icon, iconPosition = "left" }, index) => (
+                  <li
+                    key={index}
+                    onClick={onClick}
+                    className="px-4 py-3 text-sm text-slategray hover:bg-gray-100 cursor-pointer flex items-center space-x-2 border-b last:border-b-0"
+                  >
+                    {icon && iconPosition === "left" && (
+                      <span className="mr-2">{icon}</span>
+                    )}
+                    <span>{label}</span>
+                    {icon && iconPosition === "right" && (
+                      <span className="ml-2">{icon}</span>
+                    )}
+                  </li>
+                )
+              )}
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

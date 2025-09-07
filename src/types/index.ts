@@ -1,1 +1,2 @@
-export * from "./enums";
+export * from "./enum";
+export * from "./inderface";
