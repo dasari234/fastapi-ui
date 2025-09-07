@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import { UtilService } from "../services/util-service";
 import Pagination from "./ui/pagination/Pagination";
+import SearchInput from "./ui/search/SearchInput";
 
 interface Column<T> {
   key: keyof T | string; // string so nested keys are allowed ("user.name")
@@ -56,6 +57,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
   const [error, setError] = useState<string | null>(null);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchData = async (page: number = currentPage, overlay = true) => {
     try {
@@ -64,7 +66,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
       setLoading(true);
 
       const response = (await UtilService.get(
-        `${url}?limit=${limit}&page=${page}`
+        `${url}?limit=${limit}&page=${page}&search=${searchQuery.trim()}`
       )) as ApiResponse<T>;
 
       if (response && typeof response === "object" && "success" in response) {
@@ -115,6 +117,13 @@ function DynamicTableInner<T extends Record<string, unknown>>(
     }
   };
 
+
+  const handleSearch = (query: string) => {
+    console.log("Search query:", query);
+    setSearchQuery(query);
+    fetchData(currentPage, true);
+  };
+
   return (
     <div className="relative">
       {showOverlay && (
@@ -127,6 +136,8 @@ function DynamicTableInner<T extends Record<string, unknown>>(
         <p className="text-red-500">{error}</p>
       ) : (
         <>
+          <SearchInput onSearch={handleSearch} placeholder="Search files..." />
+
           <table className="min-w-full border border-gray-200 bg-white shadow-md rounded-lg">
             <thead>
               <tr className="bg-gray-100 text-left">
@@ -202,3 +213,6 @@ const DynamicTable = forwardRef(DynamicTableInner) as <T>(
 ) => React.ReactElement;
 
 export default DynamicTable;
+
+
+// GET /api/v1/files?search={search_term}&limit={limit}&page={page}&folder={folder}&show_all_versions={true/false}
