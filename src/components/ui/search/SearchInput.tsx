@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, X } from "lucide-react";
 
 interface SearchInputProps {
   onSearch: (value: string) => void;
   placeholder?: string;
-  delay?: number;
+  delay?: number; // debounce delay in ms
 }
 
 const SearchInput: React.FC<SearchInputProps> = ({
@@ -14,8 +14,13 @@ const SearchInput: React.FC<SearchInputProps> = ({
 }) => {
   const [query, setQuery] = useState("");
 
-  // Debounce logic
-  const debouncedSearch = useCallback(() => {
+  // Debounce effect
+  useEffect(() => {
+    if (!query) {
+      onSearch(""); // clear search immediately if query is empty
+      return;
+    }
+
     const handler = setTimeout(() => {
       onSearch(query.trim());
     }, delay);
@@ -23,13 +28,18 @@ const SearchInput: React.FC<SearchInputProps> = ({
     return () => clearTimeout(handler);
   }, [query, delay, onSearch]);
 
-  useEffect(() => {
-    return debouncedSearch();
-  }, [debouncedSearch]);
-
+  // Clear input handler
   const handleClear = () => {
     setQuery("");
-    onSearch(""); // notify parent
+    onSearch(""); // notify parent instantly
+  };
+
+  // Handle Enter key (immediate search)
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      onSearch(query.trim());
+    }
   };
 
   return (
@@ -42,6 +52,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={handleKeyDown}
         placeholder={placeholder}
         className="w-full pl-10 pr-8 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       />

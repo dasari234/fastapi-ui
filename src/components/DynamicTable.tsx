@@ -95,7 +95,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
   useEffect(() => {
     fetchData(currentPage, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url]);
+  }, [searchQuery, currentPage, url]);
 
   useImperativeHandle(ref, () => ({
     refresh: () => fetchData(currentPage, true),
@@ -120,8 +120,8 @@ function DynamicTableInner<T extends Record<string, unknown>>(
 
   const handleSearch = (query: string) => {
     console.log("Search query:", query);
+    setCurrentPage(1);
     setSearchQuery(query);
-    fetchData(currentPage, true);
   };
 
   return (
