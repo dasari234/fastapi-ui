@@ -6,19 +6,21 @@ import React, {
     useMemo,
     useState,
 } from "react";
+import { toast } from "react-toastify";
 import { buildUrlWithParams } from "../lib/utils";
 import { UtilService } from "../services/util-service";
 import Pagination from "./ui/pagination/Pagination";
 import SearchInput from "./ui/search/SearchInput";
 
 interface Column<T> {
-  key: keyof T | string; // string so nested keys are allowed ("user.name")
+  key: keyof T | string;
   label: string;
   render?: (row: T) => React.ReactNode;
 }
 
 interface ApiResponse<T> {
   success: boolean;
+  message?: string;
   data?: {
     records?: T[];
     total_pages?: number;
@@ -75,6 +77,13 @@ function DynamicTableInner<T extends Record<string, unknown>>(
       const response = (await UtilService.get(urlWithParams)) as ApiResponse<T>;
 
       if (response && typeof response === "object" && "success" in response) {
+        if (!response.success) {
+          toast.error((response && response.message) || "Failed to fetch data");
+          setTotalPages(0);
+          setData([]);
+          return
+        }
+
         const rows =
           response.data && Array.isArray(response.data.records)
             ? response.data.records
@@ -123,6 +132,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
   };
 
   const handleSearch = (query: string) => {
+    if(query === "") return;
     setCurrentPage(1);
     setSearchQuery(query);
   };

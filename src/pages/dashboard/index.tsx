@@ -1,11 +1,12 @@
 import { Download, FileSpreadsheet, Trash2 } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { toast } from "react-toastify";
 import type { DynamicTableRef } from "../../components/DynamicTable";
 import DynamicTable from "../../components/DynamicTable";
 import FileUpload from "../../components/FileUpload";
 import { Button } from "../../components/ui/Button";
 import Tooltip from "../../components/ui/Tooltip";
-import { formatDate } from "../../lib/utils";
+import { downloadFile, formatDate } from "../../lib/utils";
 import S3Service from "../../services/s3-service";
 
 const DashboardPage: React.FC = () => {
@@ -17,6 +18,7 @@ const DashboardPage: React.FC = () => {
     file_size: number;
     created_at: string;
     s3_key?: string;
+    score?: number;
   }
 
   const handleView = async (row: FileRow) => {
@@ -27,18 +29,23 @@ const DashboardPage: React.FC = () => {
   const handleDelete = async (row: FileRow) => {
     try {
       const response = await S3Service.deleteFile(row.s3_key || "");
-      console.log("Deleted file", response);
-
-      tableRef.current?.refresh();
+      if (Object.hasOwn(response, "deleted_key")) {
+        toast.success("File deleted successfully");
+        tableRef.current?.refresh();
+      }
     } catch (err) {
       console.error("Failed to delete", err);
     }
   };
 
   const handleUploadSuccess = (msg: string) => {
-    console.log("Upload success callback:", msg);
-
+    toast.success(msg || "File uploaded successfully");
     tableRef.current?.refresh();
+  };
+
+  const handleDownload = async (row: FileRow) => {
+    console.log("Download file", row);
+    downloadFile(row.s3_key || "", row.original_filename);
   };
 
   useEffect(() => {
@@ -65,43 +72,48 @@ const DashboardPage: React.FC = () => {
     {
       key: "score",
       label: "Score",
+      render: (row: FileRow) =>
+        row.score !== undefined && row.score !== null
+          ? (row.score / 100).toFixed(2)
+          : "—",
     },
     {
       key: "actions",
       label: "Actions",
       render: (row: FileRow) => (
-        <div className="flex">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-blue-500 hover:text-blue-700"
-            onClick={() => handleView(row)}
-          >
-            <Tooltip content="View" maxWidth="max-w-xl">
+        <div className="flex gap-2">
+          <Tooltip content="View" maxWidth="max-w-xl">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-blue-500 hover:text-blue-700"
+              onClick={() => handleView(row)}
+            >
               <FileSpreadsheet className="size-3.5" />
-            </Tooltip>
-          </Button>
+            </Button>
+          </Tooltip>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-blue-500 hover:text-blue-700"
-            onClick={() => handleView(row)}
-          >
-            <Tooltip content="Download" maxWidth="max-w-xl">
+          <Tooltip content="Download" maxWidth="max-w-xl">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-blue-500 hover:text-blue-700"
+              onClick={() => handleDownload(row)}
+            >
               <Download className="size-3.5" />
-            </Tooltip>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-red-500 hover:text-red-700"
-            onClick={() => handleDelete(row)}
-          >
-            <Tooltip content="Delete" maxWidth="max-w-xl">
+            </Button>
+          </Tooltip>
+
+          <Tooltip content="Delete" maxWidth="max-w-xl">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-red-500 hover:text-red-700"
+              onClick={() => handleDelete(row)}
+            >
               <Trash2 className="size-3.5" />
-            </Tooltip>
-          </Button>
+            </Button>
+          </Tooltip>
         </div>
       ),
     },
