@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
-import { Avatar } from "../avatar/Avatar";
 import { useClickOutside } from "../../../hooks/use-click-outside";
 import { cn } from "../../../lib/utils";
+import { Avatar } from "../avatar/Avatar";
 
 type DropdownItem = {
   label: string;
@@ -67,7 +67,7 @@ export function Dropdown({ text, items, className }: DropdownProps) {
         className="flex items-center space-x-2 px-4 py-2 transition duration-300 hover:bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <Avatar initials={text} />
-        {/* <span>{text}</span> */}
+        {/* <span>{lastLogin}</span> */}
         <ChevronDown className="text-gray-400"/>
       </button>
 

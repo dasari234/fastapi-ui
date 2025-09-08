@@ -149,7 +149,10 @@ function DynamicTableInner<T extends Record<string, unknown>>(
         <p className="text-red-500">{error}</p>
       ) : (
         <>
-          <SearchInput onSearch={handleSearch} placeholder="Search files..." />
+        <div className="flex justify-between p-2 bg-white">
+            <SearchInput onSearch={handleSearch} placeholder="Search files..." />
+        </div>
+          
 
           <table className="min-w-full border border-gray-200 bg-white shadow-md rounded-lg">
             <thead>

@@ -169,7 +169,7 @@ const renderDropdown = () => (
       </PaginationContent>
       <PaginationNext
         onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
-        className={`cursor-pointer h-7 px-2 flex items-center justify-center ${
+        className={`cursor-pointer h-7 px-5 flex items-center justify-center ${
           currentPage === totalPages ? "opacity-40 pointer-events-none" : ""
         }`}
       />

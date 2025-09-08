@@ -1,4 +1,4 @@
-import { LogOut } from "lucide-react";
+import { CircleUser, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuthContext } from "../hooks";
 import { getInitials, getLocalStorage } from "../lib/utils";
@@ -9,20 +9,24 @@ export default function Header() {
   const [isLoading, setIsLoading] = useState(true);
   const [username, setUsername] = useState("");
   const [userRole, setUserRole] = useState("");
+
   useEffect(() => {
     setTimeout(() => {
       const storedUser = getLocalStorage("user") as {
         first_name?: string;
         last_name?: string;
         role?: string;
+        last_login?: string;
       };
 
       const initials = getInitials(
         `${storedUser?.first_name ?? ""} ${storedUser?.last_name ?? ""}`
       );
 
-      const userFullname = `${storedUser?.first_name ?? ""} ${storedUser?.last_name ?? ""
-        } (${storedUser.role})`;
+      const userFullname = `${storedUser?.first_name ?? ""} ${
+        storedUser?.last_name ?? ""
+      } (${storedUser.role})`;
+      
       setUsername(initials);
       setUserRole(userFullname);
       setIsLoading(false);
@@ -33,7 +37,7 @@ export default function Header() {
     {
       label: userRole,
       onClick: () => console.log("clicked on role"),
-      // icon: <CircleUser className="w-4 h-4" />,
+      icon: <CircleUser className="w-4 h-4 text-gray-400" />,
       iconPosition: "left" as const,
     },
     // {
@@ -51,7 +55,7 @@ export default function Header() {
     {
       label: "Logout",
       onClick: logout,
-      icon: <LogOut className="w-4 h-4" />,
+      icon: <LogOut className="w-4 h-4 text-gray-400" />,
       iconPosition: "left" as const,
     },
   ];

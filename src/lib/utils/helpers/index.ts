@@ -22,6 +22,21 @@ export function formatDate(
   return date.toLocaleDateString("en-GB", options);
 }
 
+export function formatDateTime(dateString?: string): string {
+  if (!dateString) return "—";
+  const date = new Date(dateString);
+
+  return date.toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short", 
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,  
+  }).replace(",", "");
+}
+
 
 export function getInitials(fullName: string | null | undefined): string {
   if (!fullName) return "";
