@@ -1,11 +1,12 @@
 import { Loader2 } from "lucide-react";
 import React, {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useState,
+    forwardRef,
+    useEffect,
+    useImperativeHandle,
+    useMemo,
+    useState,
 } from "react";
+import { buildUrlWithParams } from "../lib/utils";
 import { UtilService } from "../services/util-service";
 import Pagination from "./ui/pagination/Pagination";
 import SearchInput from "./ui/search/SearchInput";
@@ -65,9 +66,13 @@ function DynamicTableInner<T extends Record<string, unknown>>(
       setShowOverlay(overlay);
       setLoading(true);
 
-      const response = (await UtilService.get(
-        `${url}?limit=${limit}&page=${page}&search=${searchQuery.trim()}`
-      )) as ApiResponse<T>;
+      const urlWithParams = buildUrlWithParams(url, {
+        limit: limit,
+        page: page,
+        search: searchQuery.trim() || undefined,
+      });
+
+      const response = (await UtilService.get(urlWithParams)) as ApiResponse<T>;
 
       if (response && typeof response === "object" && "success" in response) {
         const rows =
@@ -117,9 +122,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
     }
   };
 
-
   const handleSearch = (query: string) => {
-    console.log("Search query:", query);
     setCurrentPage(1);
     setSearchQuery(query);
   };
@@ -154,46 +157,45 @@ function DynamicTableInner<T extends Record<string, unknown>>(
             </thead>
 
             <tbody>
-              {data.length > 0 ? (
-                data.map((row, idx) => (
-                  <tr
-                    key={idx}
-                    className="hover:bg-gray-50 transition-colors duration-150"
-                  >
-                    {headers.map((col) => {
-                      let value: React.ReactNode;
-                      if (col.render) {
-                        value = col.render(row);
-                      } else {
-                        const nested = getNestedValue(row, String(col.key));
-                        value = (nested !== undefined && nested !== null)
-                          ? String(nested)
-                          : "";
-                      }
-
-                      return (
-                        <td
-                          key={String(col.key)}
-                          className="px-4 py-2 text-sm text-gray-700 border-b"
-                        >
-                          {value !== undefined && value !== null ? value : ""}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))
-              ) : (
-                !loading && (
-                  <tr>
-                    <td
-                      colSpan={headers.length}
-                      className="py-4 text-center text-md text-gray-600"
+              {data.length > 0
+                ? data.map((row, idx) => (
+                    <tr
+                      key={idx}
+                      className="hover:bg-gray-50 transition-colors duration-150"
                     >
-                      No records found.
-                    </td>
-                  </tr>
-                )
-              )}
+                      {headers.map((col) => {
+                        let value: React.ReactNode;
+                        if (col.render) {
+                          value = col.render(row);
+                        } else {
+                          const nested = getNestedValue(row, String(col.key));
+                          value =
+                            nested !== undefined && nested !== null
+                              ? String(nested)
+                              : "";
+                        }
+
+                        return (
+                          <td
+                            key={String(col.key)}
+                            className="px-4 py-2 text-sm text-gray-700 border-b"
+                          >
+                            {value !== undefined && value !== null ? value : ""}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))
+                : !loading && (
+                    <tr>
+                      <td
+                        colSpan={headers.length}
+                        className="py-4 text-center text-md text-gray-600"
+                      >
+                        No records found.
+                      </td>
+                    </tr>
+                  )}
             </tbody>
           </table>
 
@@ -213,6 +215,5 @@ const DynamicTable = forwardRef(DynamicTableInner) as <T>(
 ) => React.ReactElement;
 
 export default DynamicTable;
-
 
 // GET /api/v1/files?search={search_term}&limit={limit}&page={page}&folder={folder}&show_all_versions={true/false}

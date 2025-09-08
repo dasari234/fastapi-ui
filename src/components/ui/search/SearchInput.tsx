@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
 import { Search, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 interface SearchInputProps {
   onSearch: (value: string) => void;
   placeholder?: string;
-  delay?: number; // debounce delay in ms
+  delay?: number;
 }
 
 const SearchInput: React.FC<SearchInputProps> = ({
@@ -17,7 +17,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
   // Debounce effect
   useEffect(() => {
     if (!query) {
-      onSearch(""); // clear search immediately if query is empty
+      onSearch("");
       return;
     }
 
@@ -31,7 +31,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
   // Clear input handler
   const handleClear = () => {
     setQuery("");
-    onSearch(""); // notify parent instantly
+    onSearch("");
   };
 
   // Handle Enter key (immediate search)

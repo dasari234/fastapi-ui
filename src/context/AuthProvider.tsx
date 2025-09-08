@@ -1,11 +1,16 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from "./AuthContext";
-import AuthService from "../services/auth";
 import { toast } from "react-toastify";
+import AuthService from "../services/auth";
+import { UserContext } from "./AuthContext";
 
+import {
+  getLocalStorage,
+  localStorageKeys,
+  removeLocalStorage,
+  setLocalStorage,
+} from "../lib/utils";
 import type { Login, UserResponse } from "../types";
-import { getLocalStorage, localStorageKeys, removeLocalStorage, setLocalStorage } from "../lib/utils";
 
 type Session = {
   access_token: string;
@@ -13,7 +18,9 @@ type Session = {
   expiresAt: number;
 };
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const navigate = useNavigate();
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const refreshInProgressRef = useRef(false);
@@ -37,10 +44,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isSidenav, setIsSidenav] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
-  // ------------------
   // Helpers
-  // ------------------
-
   const saveSession = (session: Session) => {
     setLocalStorage(localStorageKeys.session, JSON.stringify(session));
     setLocalStorage("accessToken", session.access_token);
@@ -58,29 +62,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // ------------------
   // Auth Handlers
-  // ------------------
-
   const handleLogin = async (formData: Login) => {
     setIsLoading(true);
     try {
-      const payload = Object.entries(formData).reduce<Record<string, string>>((acc, [key, value]) => { acc[key] = value !== undefined ? String(value) : ""; return acc; }, {});
-      const loginResponse = await AuthService.login(payload) as | {
-        success?: boolean;
-        data?: {
-          access_token: string[];
-          refresh_token: string[];
-          user: UserResponse;
-        };
-      } | undefined;
+      const payload = Object.entries(formData).reduce<Record<string, string>>(
+        (acc, [key, value]) => {
+          acc[key] = value !== undefined ? String(value) : "";
+          return acc;
+        },
+        {}
+      );
+      const loginResponse = (await AuthService.login(payload)) as
+        | {
+            success?: boolean;
+            data?: {
+              access_token: string;
+              refresh_token: string;
+              user: UserResponse;
+            };
+          }
+        | undefined;
 
       if (!loginResponse?.success) {
         throw new Error("Invalid credentials");
       }
 
-      const accessToken = loginResponse?.data?.access_token?.[0];
-      const refreshToken = loginResponse?.data?.refresh_token?.[0];
+      const accessToken = loginResponse?.data?.access_token;
+      const refreshToken = loginResponse?.data?.refresh_token;
 
       if (!accessToken || !refreshToken) {
         throw new Error("Missing access or refresh token");
@@ -89,7 +98,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const session: Session = {
         access_token: accessToken,
         refresh_token: refreshToken,
-        expiresAt: Date.now() + 3600 * 1000, // 1h expiry
+        expiresAt: Date.now() + 60 * 60 * 1000, // 1h expiry
       };
 
       saveSession(session);
@@ -116,12 +125,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     navigate("/login");
   };
 
-  // ------------------
   // Token Refresh
-  // ------------------
-
   const refreshTokens = async () => {
-    debugger
     if (refreshInProgressRef.current) return;
     refreshInProgressRef.current = true;
 
@@ -132,11 +137,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     try {
-
-      const resp = await AuthService.refreshToken({ refresh_token: session.refresh_token }) as {
-        access_token: string;
-        refresh_token: string;
-      } | null | undefined;
+      const resp = (await AuthService.refreshToken({
+        refresh_token: session.refresh_token,
+      })) as
+        | {
+            access_token: string;
+            refresh_token: string;
+          }
+        | null
+        | undefined;
 
       if (!resp?.access_token || !resp?.refresh_token) {
         throw new Error("Invalid refresh response");
@@ -145,9 +154,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const newSession: Session = {
         access_token: resp.access_token,
         refresh_token: resp.refresh_token,
-        expiresAt: Date.now() + 3600 * 1000,
+        expiresAt: Date.now() + 60 * 60 * 1000, 
       };
-      console.log("Token refreshed*********");
       saveSession(newSession);
     } catch (err) {
       console.error("Token refresh failed:", err);
@@ -165,45 +173,44 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     refreshTimeoutRef.current = setTimeout(refreshFn, Math.max(timeout, 0));
   };
 
-useEffect(() => {
-  const session = getLocalStorage<Session>(localStorageKeys.session);
-  if (!session) {
-    clearSession();
-    return;
-  }
-
-  // Mark authenticated immediately
-  setIsAuthenticated(true);
-
-  // Restore user from localStorage if available
-  const storedUser = getLocalStorage<UserResponse>("user");
-  if (storedUser) {
-    setUser(storedUser);
-  } else {
-    // Or re-fetch if not stored
-    AuthService.getUser()
-      .then((res) => {
-        if (res?.code === 200) {
-          setUser(res.data);
-          setLocalStorage("user", JSON.stringify(res.data));
-        } else {
-          handleLogout();
-        }
-      })
-      .catch(() => handleLogout());
-  }
-
-  // Schedule refresh
-  scheduleTokenRefresh(session.expiresAt, refreshTokens);
-
-  return () => {
-    if (refreshTimeoutRef.current) {
-      clearTimeout(refreshTimeoutRef.current);
+  useEffect(() => {
+    const session = getLocalStorage<Session>(localStorageKeys.session);
+    if (!session) {
+      clearSession();
+      return;
     }
-  };
-// eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
 
+    // Mark authenticated immediately
+    setIsAuthenticated(true);
+
+    // Restore user from localStorage if available
+    const storedUser = getLocalStorage<UserResponse>("user");
+    if (storedUser) {
+      setUser(storedUser);
+    } else {
+      // Or re-fetch if not stored
+      AuthService.getUser()
+        .then((res) => {
+          if (res?.success) {
+            setUser(res.data);
+            setLocalStorage("user", JSON.stringify(res.data));
+          } else {
+            handleLogout();
+          }
+        })
+        .catch(() => handleLogout());
+    }
+
+    // Schedule refresh
+    scheduleTokenRefresh(session.expiresAt, refreshTokens);
+
+    return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <UserContext.Provider

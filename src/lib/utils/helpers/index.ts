@@ -32,3 +32,16 @@ export function getInitials(fullName: string | null | undefined): string {
 
   return (first + last).toUpperCase();
 }
+
+
+export const buildUrlWithParams = (baseUrl: string, params: Record<string, string | number | undefined>): string => {
+  const urlParams = new URLSearchParams();
+  
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      urlParams.append(key, value.toString());
+    }
+  });
+  
+  return `${baseUrl}?${urlParams.toString()}`;
+};
