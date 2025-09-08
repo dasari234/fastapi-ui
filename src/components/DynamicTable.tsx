@@ -1,10 +1,10 @@
 import { Loader2 } from "lucide-react";
 import React, {
-    forwardRef,
-    useEffect,
-    useImperativeHandle,
-    useMemo,
-    useState,
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
 } from "react";
 import { toast } from "react-toastify";
 import { buildUrlWithParams } from "../lib/utils";
@@ -132,7 +132,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
   };
 
   const handleSearch = (query: string) => {
-    if(query === "") return;
+    if (query === "") return;
     setCurrentPage(1);
     setSearchQuery(query);
   };
@@ -149,10 +149,10 @@ function DynamicTableInner<T extends Record<string, unknown>>(
         <p className="text-red-500">{error}</p>
       ) : (
         <>
-        <div className="flex justify-between p-2 bg-white">
+          <div className="flex justify-between p-2 bg-white">
             <SearchInput onSearch={handleSearch} placeholder="Search files..." />
-        </div>
-          
+          </div>
+
 
           <table className="min-w-full border border-gray-200 bg-white shadow-md rounded-lg">
             <thead>
@@ -172,43 +172,43 @@ function DynamicTableInner<T extends Record<string, unknown>>(
             <tbody>
               {data.length > 0
                 ? data.map((row, idx) => (
-                    <tr
-                      key={idx}
-                      className="hover:bg-gray-50 transition-colors duration-150"
-                    >
-                      {headers.map((col) => {
-                        let value: React.ReactNode;
-                        if (col.render) {
-                          value = col.render(row);
-                        } else {
-                          const nested = getNestedValue(row, String(col.key));
-                          value =
-                            nested !== undefined && nested !== null
-                              ? String(nested)
-                              : "";
-                        }
+                  <tr
+                    key={idx}
+                    className="hover:bg-gray-50 transition-colors duration-150"
+                  >
+                    {headers.map((col) => {
+                      let value: React.ReactNode;
+                      if (col.render) {
+                        value = col.render(row);
+                      } else {
+                        const nested = getNestedValue(row, String(col.key));
+                        value =
+                          nested !== undefined && nested !== null
+                            ? String(nested)
+                            : "";
+                      }
 
-                        return (
-                          <td
-                            key={String(col.key)}
-                            className="px-4 py-2 text-sm text-gray-700 border-b"
-                          >
-                            {value !== undefined && value !== null ? value : ""}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))
+                      return (
+                        <td
+                          key={String(col.key)}
+                          className="px-4 py-2 text-sm text-gray-700 border-b"
+                        >
+                          {value !== undefined && value !== null ? value : ""}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))
                 : !loading && (
-                    <tr>
-                      <td
-                        colSpan={headers.length}
-                        className="py-4 text-center text-md text-gray-600"
-                      >
-                        No records found.
-                      </td>
-                    </tr>
-                  )}
+                  <tr>
+                    <td
+                      colSpan={headers.length}
+                      className="py-4 text-center text-md text-gray-600"
+                    >
+                      No records found.
+                    </td>
+                  </tr>
+                )}
             </tbody>
           </table>
 
@@ -230,3 +230,12 @@ const DynamicTable = forwardRef(DynamicTableInner) as <T>(
 export default DynamicTable;
 
 // GET /api/v1/files?search={search_term}&limit={limit}&page={page}&folder={folder}&show_all_versions={true/false}
+
+
+
+// {isLoading && (
+//   <LoadingOverlay
+//     visible={true}
+//     overlayColor="rgba(255, 255, 255, 0.7)"
+//   />
+// )}

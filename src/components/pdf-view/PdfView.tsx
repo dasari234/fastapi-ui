@@ -11,7 +11,7 @@ const PDFView = ({ pdfUrl, className }: PDFViewerProps) => {
 
   const handleLoad = () => {
     setIsLoading(false);
-    setError(null); 
+    setError(null);
   };
 
   const handleError = () => {
@@ -61,3 +61,9 @@ const PDFView = ({ pdfUrl, className }: PDFViewerProps) => {
 };
 
 export default PDFView;
+
+
+
+{/* <div className="w-[800px] h-[400px] overflow-hidden">
+          <PDFViewer pdfUrl={cvUrl} className="mx-auto" />
+        </div> */}
