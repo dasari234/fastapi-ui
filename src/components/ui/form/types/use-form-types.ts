@@ -1,6 +1,6 @@
-import type { UseFormReturnType } from "@mantine/form";
-import type { InputHTMLAttributes, SelectHTMLAttributes } from "react";
-
+// import type { UseFormReturnType } from "@mantine/form";
+import type { SelectHTMLAttributes } from "react";
+import type { UseFormReturnType } from "../../../../lib/utils/use-form/types";
 
 export interface FieldOption {
   label: string;
@@ -40,30 +40,17 @@ export interface DynamicFormProps {
 
 export type FormType = UseFormReturnType<Record<string, unknown>>;
 
-export interface FormFieldProps<T> {
+export interface FormFieldProps<T extends object> {
   label?: string;
-  name: keyof T & string;
-  form: UseFormReturnType<Record<string, unknown>>;
+  name: keyof T | string;
+  form: UseFormReturnType<T>;
   withAsterisk?: boolean;
-  prefix?: string;
   placeholder?: string;
-  searchable?: boolean;
   clearable?: boolean;
   disabled?: boolean;
-  maxtagcount?: number;
+  className?: string;
 }
 
-export type TextInputProps<T> = FormFieldProps<T> &
-  Omit<InputHTMLAttributes<HTMLInputElement>, "name">;
-
-export type DateInputProps<T = unknown> = {
-  label?: string;
-  name: keyof T;
-  form: UseFormReturnType<Record<string, unknown>>;
-  withAsterisk?: boolean;
-  required?: boolean;
-  disabled?: boolean;
-};
 
 export type SelectProps = Omit<
   SelectHTMLAttributes<HTMLSelectElement>,
@@ -88,9 +75,11 @@ export type SelectProps = Omit<
 
 export interface RenderFieldProps<T> {
   field: FieldConfig;
-  form: UseFormReturnType<T, (values: T) => T>;
+  form: UseFormReturnType<T & Record<string, unknown>>;
 }
 
 export interface FormValues {
   [key: string]: unknown;
 }
+
+// TODO DO NOT DELETE - used in TextareaInput

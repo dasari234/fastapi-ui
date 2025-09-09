@@ -1,9 +1,10 @@
-export function flattenObject(
-  obj: Record<string, unknown>,
+export function flattenObject<T extends object>(
+  obj: T,
   prefix = ''
 ): Record<string, unknown> {
-  return Object.keys(obj).reduce((acc, key) => {
-    const value = obj[key];
+  const recordObj = obj as Record<string, unknown>;
+  return Object.keys(recordObj).reduce((acc, key) => {
+    const value = recordObj[key];
     const pre = prefix.length ? `${prefix}.` : '';
 
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {

@@ -1,8 +1,20 @@
 import { X } from "lucide-react";
-import type { FormFieldProps } from "../../../../types";
 import { cn } from "../../../../lib/utils";
+import type { Path, UseFormReturnType } from "../../../../lib/utils/use-form/types";
 
-export function TextInput<T>({
+interface TextInputProps<T extends object> {
+  label?: string;
+  name: Path<T>;
+  form: UseFormReturnType<T>;
+  withAsterisk?: boolean;
+  placeholder?: string;
+  clearable?: boolean;
+  disabled?: boolean;
+  type?: "text" | "email" | "password" | "number" | "tel" | "url";
+  className?: string;
+}
+
+export function TextInput<T extends object>({
   label,
   name,
   form,
@@ -10,21 +22,27 @@ export function TextInput<T>({
   placeholder,
   clearable,
   disabled = false,
+  type = "text",
+  className,
   ...htmlAttributes
-}: FormFieldProps<T> & { prefix?: string }) {
-  const { value, onChange, onBlur } = form.getInputProps(name as string);
-  const error = form.errors[name] as string | undefined;
+}: TextInputProps<T> & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'name'>) {
+  
+  const { value, onChange, onBlur } = form.getInputProps(name);
+  const error = form.errors[name as string]; // errors uses string keys
   const isInvalid = !!error;
 
   const handleClear = () => {
     onChange("");
   };
 
+  // Convert value to string safely
+  const stringValue = value == null ? "" : String(value);
+
   return (
-    <div className="relative">
+    <div className={cn("relative", className)}>
       {label && (
         <label
-          htmlFor={name}
+          htmlFor={name as string}
           className={cn(
             "block text-sm font-medium mb-1",
             disabled ? "text-gray-400" : "text-gray-700"
@@ -38,29 +56,27 @@ export function TextInput<T>({
       <div className="relative">
         <input
           {...htmlAttributes}
-          id={name}
-          name={name}
-          value={value}
+          type={type}
+          id={name as string}
+          name={name as string}
+          value={stringValue}
           onChange={onChange}
           onBlur={onBlur}
           autoComplete={name as string}
           placeholder={placeholder}
           className={cn(
             "w-full px-3 py-2.5 border rounded-md shadow-sm text-sm focus:outline-none focus:ring-1",
-            value && "pr-8",
-            {
-              "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed":
-                disabled,
-              "border-red-500 focus:ring-red-500": isInvalid && !disabled,
-              "border-gray-300 focus:ring-blue-500": !isInvalid && !disabled,
-            }
+            stringValue && clearable && "pr-8",
+            disabled && "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed",
+            isInvalid && !disabled && "border-red-500 focus:ring-red-500",
+            !isInvalid && !disabled && "border-gray-300 focus:ring-blue-500 focus:border-blue-500",
+            className
           )}
           disabled={disabled}
           readOnly={disabled}
         />
 
-        {/* Clear button */}
-        {value && clearable && (
+        {stringValue && clearable && !disabled && (
           <button
             type="button"
             onClick={handleClear}
@@ -72,7 +88,9 @@ export function TextInput<T>({
         )}
       </div>
 
-      {isInvalid && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {isInvalid && (
+        <p className="mt-1 text-xs text-red-500">{error}</p>
+      )}
     </div>
   );
 }

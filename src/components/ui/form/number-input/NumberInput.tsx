@@ -1,19 +1,29 @@
-
-import { DollarSign, Percent } from "lucide-react";
-import { X } from "lucide-react";
+import { DollarSign, Percent, X } from "lucide-react";
 import {
-
-  useState,
   useEffect,
+  useState,
   type ChangeEvent,
-  type FocusEvent,
   type KeyboardEvent,
-
 } from "react";
 import { cn } from "../../../../lib/utils";
-import type { TextInputProps } from "../../../../types";
+import type {
+  Path,
+  UseFormReturnType,
+} from "../../../../lib/utils/use-form/types";
 
-interface ExtendedTextInputProps<T> extends TextInputProps<T> {
+interface TextInputProps<T extends object> {
+  label?: string;
+  name: Path<T>;
+  form: UseFormReturnType<T>;
+  withAsterisk?: boolean;
+  placeholder?: string;
+  clearable?: boolean;
+  disabled?: boolean;
+  type?: "text" | "email" | "password" | "number" | "tel" | "url";
+  className?: string;
+}
+
+export interface ExtendedTextInputProps<T extends object> extends TextInputProps<T> {
   prefix?: "currency" | "percent";
   max?: number;
   min?: number;
@@ -21,7 +31,7 @@ interface ExtendedTextInputProps<T> extends TextInputProps<T> {
   disabled?: boolean;
 }
 
-export function NumberInput<T>({
+export function NumberInput<T extends object>({
   label,
   name,
   form,
@@ -89,7 +99,7 @@ export function NumberInput<T>({
   };
 
   // Format value on blur
-  const handleBlur = (e: FocusEvent<HTMLInputElement>) => {
+  const handleBlur = () => {
     const numericValue = parseFloat(inputValue || "");
 
     if (!isNaN(numericValue)) {
@@ -112,7 +122,7 @@ export function NumberInput<T>({
     }
 
     // Call original onBlur
-    onBlur?.(e);
+    onBlur?.();
     setIsFocused(false);
   };
 
@@ -137,8 +147,8 @@ export function NumberInput<T>({
   const displayValue = isFocused
     ? inputValue
     : prefix === "currency" && inputValue
-      ? parseFloat(inputValue).toFixed(decimalScale)
-      : inputValue;
+    ? parseFloat(inputValue).toFixed(decimalScale)
+    : inputValue;
 
   return (
     <div className="relative">
@@ -192,8 +202,8 @@ export function NumberInput<T>({
             disabled
               ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
               : isInvalid
-                ? "border-red-500 focus:ring-red-500"
-                : "border-gray-300 focus:ring-blue-500"
+              ? "border-red-500 focus:ring-red-500"
+              : "border-gray-300 focus:ring-blue-500"
           )}
           disabled={disabled}
           readOnly={disabled}

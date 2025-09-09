@@ -2,7 +2,7 @@ import { Download, FileSpreadsheet, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import FileUpload from "../../components/fileupload/FileUpload";
-import PDFView from "../../components/pdf-view/PdfView";
+import PDFView from "../../components/pdf-view/PDFView";
 import type { DynamicTableRef } from "../../components/table/DynamicTable";
 import DynamicTable from "../../components/table/DynamicTable";
 import { Button } from "../../components/ui/Button";

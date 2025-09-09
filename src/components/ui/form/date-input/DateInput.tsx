@@ -1,15 +1,25 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  type KeyboardEvent,
-  useCallback,
-  useLayoutEffect,
-} from "react";
 import dayjs from "dayjs";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
 
 import { cn } from "../../../../lib/utils";
-import type { DateInputProps } from "../../../../types";
+import type { UseFormReturnType } from "../../../../lib/utils/use-form/types";
+
+
+export type DateInputProps<T = unknown> = {
+  label?: string;
+  name: keyof T;
+  form: UseFormReturnType<Record<string, unknown>>;
+  withAsterisk?: boolean;
+  required?: boolean;
+  disabled?: boolean;
+};
 
 export function DateInput<T>({
   label,
