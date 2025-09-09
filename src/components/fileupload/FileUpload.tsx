@@ -7,8 +7,8 @@ import {
   X,
 } from "lucide-react";
 import { useRef, useState } from "react";
-import S3Service from "../services/s3-service";
-import LoadingSpinner from "./LoadingSpinner";
+import S3Service from "../../services/s3-service";
+import { Button } from "../ui/Button";
 
 const ALLOWED_EXTENSIONS = {
   image: ["jpg", "jpeg", "png", "gif", "webp"],
@@ -53,18 +53,18 @@ const FileItem = ({ file, onRemove }: FileItemProps) => {
   const category = getFileCategory(ext);
 
   return (
-    <div className="flex items-center justify-between p-2 border rounded-lg bg-white shadow-sm">
+    <div className="flex items-center justify-between p-2 border rounded-md bg-white shadow-sm">
       <div className="flex items-center gap-2">
         <FileTypeIcon category={category} />
-        <span className="text-sm text-gray-700 truncate max-w-[180px]">
+        <span className="text-sm text-gray-700 truncate max-w-[220px]">
           {file.name}
         </span>
       </div>
       <button
-        className="p-1 text-gray-400 hover:text-red-500 transition"
+        className="ml-2 p-1 text-gray-400 hover:text-red-500 transition rounded-full bg-gray-100 hover:bg-gray-200"
         onClick={() => onRemove(file.name)}
       >
-        <X className="w-4 h-4" />
+        <X className="w-3 h-3" />
       </button>
     </div>
   );
@@ -84,8 +84,6 @@ export default function FileUpload({
     valid: File[];
     invalid: string[];
   }
-
-  // Removed redundant empty interface
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
@@ -166,7 +164,7 @@ export default function FileUpload({
   };
 
   return (
-    <div className="max-w-md mx-auto p-4 border rounded-md bg-gray-50 shadow-sm">
+    <div className="w-full p-4 border rounded-md bg-gray-50 shadow-sm">
       <h2 className="text-lg font-semibold mb-4 text-gray-800">File Upload</h2>
 
       {/* Upload Input */}
@@ -200,7 +198,7 @@ export default function FileUpload({
           <h3 className="text-md font-medium text-gray-700 mb-2">
             Selected Files
           </h3>
-          <div className="space-y-2 max-h-60 overflow-y-auto">
+          <div className="flex gap-3 space-y-2 max-h-60 overflow-y-auto">
             {files.map((file) => (
               <FileItem key={file.name} file={file} onRemove={removeFile} />
             ))}
@@ -210,14 +208,14 @@ export default function FileUpload({
 
       {/* Upload Button */}
       {files.length > 0 && (
-        <button
+        <Button
           onClick={uploadFiles}
           className="flex gap-2 mt-4 w-full bg-blue-500 text-white p-2 rounded-md font-medium hover:bg-blue-600 transition disabled:bg-blue-300"
           disabled={uploading}
+          loading={uploading}
         >
-          {uploading && <LoadingSpinner className="w-6 h-6" />} Upload{" "}
-          {files.length} File{files.length !== 1 ? "s" : ""}
-        </button>
+          Upload {files.length} File{files.length !== 1 ? "s" : ""}
+        </Button>
       )}
     </div>
   );

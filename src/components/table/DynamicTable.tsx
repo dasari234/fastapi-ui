@@ -1,4 +1,3 @@
-import { Loader2 } from "lucide-react";
 import React, {
   forwardRef,
   useEffect,
@@ -7,10 +6,11 @@ import React, {
   useState,
 } from "react";
 import { toast } from "react-toastify";
-import { buildUrlWithParams } from "../lib/utils";
-import { UtilService } from "../services/util-service";
-import Pagination from "./ui/pagination/Pagination";
-import SearchInput from "./ui/search/SearchInput";
+import { buildUrlWithParams } from "../../lib/utils";
+import { UtilService } from "../../services/util-service";
+import { LoadingOverlay } from "../ui/loading-overlay/LoadingOverlay";
+import Pagination from "../ui/pagination/Pagination";
+import SearchInput from "../ui/search/SearchInput";
 
 interface Column<T> {
   key: keyof T | string;
@@ -139,11 +139,12 @@ function DynamicTableInner<T extends Record<string, unknown>>(
 
   return (
     <div className="relative">
-      {showOverlay && (
+      {/* {showOverlay && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/70 z-10">
           <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
         </div>
-      )}
+      )} */}
+      <LoadingOverlay visible={showOverlay} />
 
       {error ? (
         <p className="text-red-500">{error}</p>
@@ -230,12 +231,3 @@ const DynamicTable = forwardRef(DynamicTableInner) as <T>(
 export default DynamicTable;
 
 // GET /api/v1/files?search={search_term}&limit={limit}&page={page}&folder={folder}&show_all_versions={true/false}
-
-
-
-// {isLoading && (
-//   <LoadingOverlay
-//     visible={true}
-//     overlayColor="rgba(255, 255, 255, 0.7)"
-//   />
-// )}

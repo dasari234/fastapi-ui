@@ -1,4 +1,5 @@
-import React, { ReactNode, CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
+
 
 type LoadingOverlayProps = {
   visible: boolean;

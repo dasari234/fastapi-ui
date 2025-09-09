@@ -67,8 +67,7 @@ export function Dropdown({ text, items, className }: DropdownProps) {
         className="flex items-center space-x-2 px-4 py-2 transition duration-300 hover:bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <Avatar initials={text} />
-        {/* <span>{lastLogin}</span> */}
-        <ChevronDown className="text-gray-400"/>
+        <ChevronDown className="text-gray-400" />
       </button>
 
       <AnimatePresence>

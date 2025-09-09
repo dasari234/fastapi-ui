@@ -22,6 +22,14 @@ class S3Service {
   deleteFile(id: string): Promise<any> {
     return UseApi.request(HttpMethod.DELETE, `/files/${id}`, {});
   }
+
+  downloadFile(id: string): Promise<any> {
+    return UseApi.request(HttpMethod.GET, `/files/${id}/download-url`, {});
+  }
+
+  viewFile(id: string): Promise<any> {
+    return UseApi.request(HttpMethod.GET, `/files/${id}/view-url`, {});
+  }
 }
 
 export default new S3Service();

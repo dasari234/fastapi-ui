@@ -61,26 +61,34 @@ export const buildUrlWithParams = (baseUrl: string, params: Record<string, strin
   return `${baseUrl}?${urlParams.toString()}`;
 };
 
-//Downloads a file from a given URL
+// //Downloads a file from a given URL
+// export async function downloadFile(url: string, filename?: string) {
+//   try {
+//     const response = await fetch(url, { method: "GET" });
+//     if (!response.ok) throw new Error("Failed to download file");
 
-export async function downloadFile(url: string, filename?: string) {
-  try {
-    const response = await fetch(url, { method: "GET" });
-    if (!response.ok) throw new Error("Failed to download file");
+//     const blob = await response.blob();
+//     const objectUrl = URL.createObjectURL(blob);
 
-    const blob = await response.blob();
-    const objectUrl = URL.createObjectURL(blob);
+//     const link = document.createElement("a");
+//     link.href = objectUrl;
+//     link.download = filename || url.split("/").pop() || "download";
 
-    const link = document.createElement("a");
-    link.href = objectUrl;
-    link.download = filename || url.split("/").pop() || "download";
+//     document.body.appendChild(link);
+//     link.click();
+//     link.remove();
 
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+//     URL.revokeObjectURL(objectUrl);
+//   } catch (error) {
+//     console.error("Download failed:", error);
+//   }
+// }
 
-    URL.revokeObjectURL(objectUrl);
-  } catch (error) {
-    console.error("Download failed:", error);
-  }
+export function downloadFile(url: string) {
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = ""; 
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }

@@ -3,8 +3,8 @@ import { formatDate } from "../lib/utils";
 
 import { Download, FileSpreadsheet, Trash2 } from "lucide-react";
 import S3Service from "../services/s3-service";
-import DynamicTable, { type DynamicTableRef } from "./DynamicTable";
-import FileUpload from "./FileUpload";
+import FileUpload from "./fileupload/FileUpload";
+import DynamicTable, { type DynamicTableRef } from "./table/DynamicTable";
 import Tooltip from "./ui/Tooltip";
 
 export default function DocumentList() {

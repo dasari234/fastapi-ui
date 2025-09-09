@@ -1,16 +1,20 @@
 import { Download, FileSpreadsheet, Trash2 } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import type { DynamicTableRef } from "../../components/DynamicTable";
-import DynamicTable from "../../components/DynamicTable";
-import FileUpload from "../../components/FileUpload";
+import FileUpload from "../../components/fileupload/FileUpload";
+import PDFView from "../../components/pdf-view/PdfView";
+import type { DynamicTableRef } from "../../components/table/DynamicTable";
+import DynamicTable from "../../components/table/DynamicTable";
 import { Button } from "../../components/ui/Button";
+import Modal from "../../components/ui/modal/Modal";
 import Tooltip from "../../components/ui/Tooltip";
 import { downloadFile, formatDate } from "../../lib/utils";
 import S3Service from "../../services/s3-service";
 
 const DashboardPage: React.FC = () => {
   const tableRef = useRef<DynamicTableRef>(null);
+  const [rowdata, setRowdata] = useState<FileRow | null>(null);
+  const [open, setOpen] = useState(false);
 
   interface FileRow extends Record<string, unknown> {
     id: number;
@@ -19,16 +23,26 @@ const DashboardPage: React.FC = () => {
     created_at: string;
     s3_key?: string;
     score?: number;
+    filename?: string;
+    url?: string;
   }
 
   const handleView = async (row: FileRow) => {
-    // const response = await FileUploadService.viewFile(id);
-    console.log("View file", row);
+    try {
+      setOpen(true);
+      const response = await S3Service.downloadFile(row.s3_key || "");
+      if (response.success) {
+        setRowdata(response.data || "");
+      }
+    } catch (err) {
+      setOpen(false);
+      console.error("Failed to delete", err);
+    }
   };
 
   const handleDelete = async (row: FileRow) => {
     try {
-      const response = await S3Service.deleteFile(row.s3_key || "");
+      const response = await S3Service.viewFile(row.s3_key || "");
       if (Object.hasOwn(response, "deleted_key")) {
         toast.success("File deleted successfully");
         tableRef.current?.refresh();
@@ -38,14 +52,21 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  const handleDownload = async (row: FileRow) => {
+    try {
+      const response = await S3Service.downloadFile(row.s3_key || "");
+      if (response.success) {
+        toast.success("File downloaded successfully");
+        downloadFile(response.data.url);
+      }
+    } catch (err) {
+      console.error("Failed to delete", err);
+    }
+  };
+
   const handleUploadSuccess = (msg: string) => {
     toast.success(msg || "File uploaded successfully");
     tableRef.current?.refresh();
-  };
-
-  const handleDownload = async (row: FileRow) => {
-    console.log("Download file", row);
-    downloadFile(row.s3_key || "", row.original_filename);
   };
 
   useEffect(() => {
@@ -121,7 +142,7 @@ const DashboardPage: React.FC = () => {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center mb-6">
         <FileUpload onSuccess={handleUploadSuccess} />
       </div>
       <DynamicTable<FileRow>
@@ -130,6 +151,18 @@ const DashboardPage: React.FC = () => {
         ref={tableRef}
         columns={columns}
       />
+
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title={rowdata?.filename || "File Details"}
+        closeOnOverlayClick
+        className="max-w-4xl w-full"
+      >
+        <div className="max-h-[80vh] overflow-y-auto">
+          <PDFView pdfUrl={rowdata?.url || ""} className="mt-4" />
+        </div>
+      </Modal>
     </>
   );
 };
