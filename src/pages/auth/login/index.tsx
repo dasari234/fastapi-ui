@@ -7,7 +7,7 @@ import type { Login } from "../../../types";
 import { Link } from "react-router-dom";
 import { PasswordInput } from "../../../components/ui/form/password-input/PasswordInput";
 import { TextInput } from "../../../components/ui/form/text-input/TextInput";
-import { useForm } from "../../../hooks/use-form";
+import { useForm } from "../../../lib/use-form";
 
 function UserLogin() {
   const { login, isLoading } = useAuthContext();
@@ -72,7 +72,7 @@ function UserLogin() {
 
             <form onSubmit={form.onSubmit(handleSubmit)} className="space-y-6">
               <div>
-                <TextInput
+                <TextInput<Login>
                   label="Email"
                   name="username"
                   form={form}
@@ -81,7 +81,7 @@ function UserLogin() {
               </div>
 
               <div>
-                <PasswordInput
+                <PasswordInput<Login>
                   label="Password"
                   name="password"
                   form={form}

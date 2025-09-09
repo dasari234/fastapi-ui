@@ -1,18 +1,13 @@
 import { X } from "lucide-react";
 import { cn } from "../../../../lib/utils";
-import type { Path, UseFormReturnType } from "../../../../lib/utils/use-form/types";
-
-interface TextInputProps<T extends object> {
-  label?: string;
-  name: Path<T>;
-  form: UseFormReturnType<T>;
-  withAsterisk?: boolean;
-  placeholder?: string;
-  clearable?: boolean;
-  disabled?: boolean;
-  type?: "text" | "email" | "password" | "number" | "tel" | "url";
-  className?: string;
-}
+import type { TextInputProps } from "../../../../lib/use-form/types";
+import {
+  getFieldError,
+  getInputClasses,
+  getLabelClasses,
+  isFieldInvalid,
+  validateField,
+} from "../../../../lib/use-form/form-utils";
 
 export function TextInput<T extends object>({
   label,
@@ -25,31 +20,33 @@ export function TextInput<T extends object>({
   type = "text",
   className,
   ...htmlAttributes
-}: TextInputProps<T> & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'name'>) {
-  
+}: TextInputProps<T> &
+  Omit<React.InputHTMLAttributes<HTMLInputElement>, "name">) {
   const { value, onChange, onBlur } = form.getInputProps(name);
-  const error = form.errors[name as string]; // errors uses string keys
-  const isInvalid = !!error;
+  const error = getFieldError(form, name as string);
+  const isInvalid = isFieldInvalid(form, name as string);
+  const isTouched = form.touched[name as string];
 
   const handleClear = () => {
     onChange("");
   };
 
-  // Convert value to string safely
+  const handleBlur = () => {
+    onBlur?.();
+    if (isTouched && isInvalid) {
+      validateField(form, name as string);
+    }
+  };
+
   const stringValue = value == null ? "" : String(value);
+  const hasValue = stringValue !== "";
 
   return (
     <div className={cn("relative", className)}>
       {label && (
-        <label
-          htmlFor={name as string}
-          className={cn(
-            "block text-sm font-medium mb-1",
-            disabled ? "text-gray-400" : "text-gray-700"
-          )}
-        >
+        <label htmlFor={name as string} className={getLabelClasses(disabled)}>
           {label}
-          {withAsterisk && <span className="text-red-500">*</span>}
+          {withAsterisk && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
 
@@ -61,26 +58,24 @@ export function TextInput<T extends object>({
           name={name as string}
           value={stringValue}
           onChange={onChange}
-          onBlur={onBlur}
+          onBlur={handleBlur}
           autoComplete={name as string}
           placeholder={placeholder}
-          className={cn(
-            "w-full px-3 py-2.5 border rounded-md shadow-sm text-sm focus:outline-none focus:ring-1",
-            stringValue && clearable && "pr-8",
-            disabled && "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed",
-            isInvalid && !disabled && "border-red-500 focus:ring-red-500",
-            !isInvalid && !disabled && "border-gray-300 focus:ring-blue-500 focus:border-blue-500",
-            className
+          className={getInputClasses(
+            isInvalid,
+            disabled,
+            hasValue,
+            !!clearable
           )}
           disabled={disabled}
           readOnly={disabled}
         />
 
-        {stringValue && clearable && !disabled && (
+        {hasValue && clearable && !disabled && (
           <button
             type="button"
             onClick={handleClear}
-            className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+            className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition-colors duration-200"
             aria-label="Clear input"
           >
             <X className="h-4 w-4" />
@@ -88,9 +83,10 @@ export function TextInput<T extends object>({
         )}
       </div>
 
-      {isInvalid && (
-        <p className="mt-1 text-xs text-red-500">{error}</p>
+      {isInvalid && error && (
+        <p className="mt-1 text-xs text-red-500 animate-fadeIn">{error}</p>
       )}
+
     </div>
   );
 }

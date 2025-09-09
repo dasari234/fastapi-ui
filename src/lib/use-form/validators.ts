@@ -1,3 +1,14 @@
+export interface ValidationRule<T = unknown> {
+  required?: boolean | string;
+  min?: number | string;
+  max?: number | string;
+  minLength?: number | string;
+  maxLength?: number | string;
+  pattern?: RegExp | string;
+  validate?: (value: unknown, values: T) => boolean | string | Promise<boolean | string>;
+  equals?: unknown | string;
+}
+
 export const validators = {
   required: (value: unknown, message?: string): string | null => {
     if (value === undefined || value === null || value === '') {
@@ -47,6 +58,38 @@ export const validators = {
     }
     return null;
   },
+
+  // Custom validators
+  email: (value: string, message?: string): string | null => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (value && !emailRegex.test(value)) {
+      return message || 'Please enter a valid email address';
+    }
+    return null;
+  },
+
+  url: (value: string, message?: string): string | null => {
+    const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+    if (value && !urlRegex.test(value)) {
+      return message || 'Please enter a valid URL';
+    }
+    return null;
+  },
+
+  phone: (value: string, message?: string): string | null => {
+    const phoneRegex = /^(\+\d{1,3})?[\s-]?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{4}$/;
+    if (value && !phoneRegex.test(value)) {
+      return message || 'Please enter a valid phone number';
+    }
+    return null;
+  },
+
+  date: (value: string, message?: string): string | null => {
+    if (value && isNaN(Date.parse(value))) {
+      return message || 'Please enter a valid date';
+    }
+    return null;
+  }
 };
 
 export type Validator = typeof validators;

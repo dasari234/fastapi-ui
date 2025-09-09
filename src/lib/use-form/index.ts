@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { flattenObject } from "../lib/utils/use-form/flattenObject";
-import { get } from "../lib/utils/use-form/get";
-import { set } from "../lib/utils/use-form/set";
+import { flattenObject } from "./flattenObject";
+import { get } from "./get";
+import { set } from "./set";
 import type {
   FormOptions,
   Path,
   PathValue,
   UseFormReturnType,
-} from "../lib/utils/use-form/types";
-import { validators } from "../lib/utils/use-form/validators";
+} from "./types";
+import { validators } from "./validators";
 
 export function useForm<T extends object>(
   options: FormOptions<T>
@@ -34,7 +34,7 @@ export function useForm<T extends object>(
   });
 
   const initialValuesRef = useRef(initialValues);
-  const debounceTimeout = useRef<Record<string, NodeJS.Timeout>>({});
+  const debounceTimeout = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   // Initialize dirty and touched fields
   useEffect(() => {
@@ -65,93 +65,67 @@ export function useForm<T extends object>(
 
       let error: string | null = null;
 
-      // Check required
+      // Check required with custom message
       if (fieldRules.required) {
-        const message =
-          typeof fieldRules.required === "string"
-            ? fieldRules.required
-            : "This field is required";
+        const message = typeof fieldRules.required === 'string' ? fieldRules.required : undefined;
         error = validators.required(value, message);
         if (error) return error;
       }
 
-      // Check min
-      if (fieldRules.min !== undefined && typeof value === "number") {
-        const message =
-          typeof fieldRules.min === "string" ? fieldRules.min : undefined;
+      // Check min with custom message
+      if (fieldRules.min !== undefined && typeof value === 'number') {
+        const message = typeof fieldRules.min === 'string' ? fieldRules.min : undefined;
         error = validators.min(value, Number(fieldRules.min), message);
         if (error) return error;
       }
 
-      // Check max
-      if (fieldRules.max !== undefined && typeof value === "number") {
-        const message =
-          typeof fieldRules.max === "string" ? fieldRules.max : undefined;
+      // Check max with custom message
+      if (fieldRules.max !== undefined && typeof value === 'number') {
+        const message = typeof fieldRules.max === 'string' ? fieldRules.max : undefined;
         error = validators.max(value, Number(fieldRules.max), message);
         if (error) return error;
       }
 
-      // Check minLength
-      if (fieldRules.minLength !== undefined && typeof value === "string") {
-        const message =
-          typeof fieldRules.minLength === "string"
-            ? fieldRules.minLength
-            : undefined;
-        error = validators.minLength(
-          value,
-          Number(fieldRules.minLength),
-          message
-        );
+      // Check minLength with custom message
+      if (fieldRules.minLength !== undefined && typeof value === 'string') {
+        const message = typeof fieldRules.minLength === 'string' ? fieldRules.minLength : undefined;
+        error = validators.minLength(value, Number(fieldRules.minLength), message);
         if (error) return error;
       }
 
-      // Check maxLength
-      if (fieldRules.maxLength !== undefined && typeof value === "string") {
-        const message =
-          typeof fieldRules.maxLength === "string"
-            ? fieldRules.maxLength
-            : undefined;
-        error = validators.maxLength(
-          value,
-          Number(fieldRules.maxLength),
-          message
-        );
+      // Check maxLength with custom message
+      if (fieldRules.maxLength !== undefined && typeof value === 'string') {
+        const message = typeof fieldRules.maxLength === 'string' ? fieldRules.maxLength : undefined;
+        error = validators.maxLength(value, Number(fieldRules.maxLength), message);
         if (error) return error;
       }
 
-      // Check pattern
-      if (fieldRules.pattern !== undefined && typeof value === "string") {
-        const pattern =
-          fieldRules.pattern instanceof RegExp
-            ? fieldRules.pattern
-            : new RegExp(fieldRules.pattern as string);
-        const message =
-          typeof fieldRules.pattern === "string"
-            ? fieldRules.pattern
-            : "Invalid format";
+      // Check pattern with custom message
+      if (fieldRules.pattern !== undefined && typeof value === 'string') {
+        const pattern = fieldRules.pattern instanceof RegExp
+          ? fieldRules.pattern
+          : new RegExp(fieldRules.pattern as string);
+        const message = typeof fieldRules.pattern === 'string' ? fieldRules.pattern : undefined;
         error = validators.pattern(value, pattern, message);
         if (error) return error;
       }
 
-      // Check equals
+      // Check equals with custom message
       if (fieldRules.equals !== undefined) {
         const equalsValue = get(state.values, fieldRules.equals as Path<T>);
-        const message =
-          typeof fieldRules.equals === "string"
-            ? fieldRules.equals
-            : "Values must match";
+        const message = typeof fieldRules.equals === 'string' ? fieldRules.equals : undefined;
         error = validators.equals(value, equalsValue, message);
         if (error) return error;
       }
 
-      // Custom validation
+      // Custom validation function that can return custom messages
       if (fieldRules.validate) {
         const validationResult = await fieldRules.validate(value, state.values);
-        if (typeof validationResult === "string") {
-          return validationResult;
+        if (typeof validationResult === 'string') {
+          return validationResult; // Return custom message directly
         }
         if (validationResult === false) {
-          return "Invalid value";
+          return 'Invalid value';
         }
       }
 
@@ -372,14 +346,14 @@ export function useForm<T extends object>(
 
   const handleChange = useCallback(
     <P extends Path<T>>(
-        field: P,
-        type?: "checkbox" | "radio" | "input" | "select" | "textarea"
-      ) =>
+      field: P,
+      type?: "checkbox" | "radio" | "input" | "select" | "textarea"
+    ) =>
       (
         e:
           | React.ChangeEvent<
-              HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-            >
+            HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+          >
           | unknown
       ) => {
         let value: unknown;

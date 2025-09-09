@@ -5,42 +5,51 @@ import React, {
   useLayoutEffect,
   useRef,
   useState,
-  type KeyboardEvent,
 } from "react";
-
 import { cn } from "../../../../lib/utils";
-import type { UseFormReturnType } from "../../../../lib/utils/use-form/types";
+import type { UseFormReturnType, Path } from "../../../../lib/use-form/types";
+import {
+  getFieldError,
+  isFieldInvalid,
+  getLabelClasses,
+  validateField,
+} from "../../../../lib/use-form/form-utils";
 
-
-export type DateInputProps<T = unknown> = {
+export interface DateInputProps<T extends object> {
   label?: string;
-  name: keyof T;
-  form: UseFormReturnType<Record<string, unknown>>;
+  name: Path<T>;
+  form: UseFormReturnType<T>;
   withAsterisk?: boolean;
   required?: boolean;
   disabled?: boolean;
-};
+  className?: string;
+  minDate?: Date;
+  maxDate?: Date;
+}
 
-export function DateInput<T>({
+export function DateInput<T extends object>({
   label,
   name,
   form,
   withAsterisk,
   disabled = false,
+  className,
+  minDate,
+  maxDate,
 }: DateInputProps<T>) {
-  const { value, onChange, onBlur } = form.getInputProps(name as string);
-  const error = form.errors[name as string];
-  const isInvalid = !!error;
+  const { value, onChange, onBlur } = form.getInputProps(name);
+  const error = getFieldError(form, name as string);
+  const isInvalid = isFieldInvalid(form, name as string);
+  const isTouched = form.touched[name as string];
+
+
   const [showPicker, setShowPicker] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
   const [alignRight, setAlignRight] = useState(false);
-
-  // Position state
   const [position, setPosition] = useState<"below" | "above">("below");
 
-  // Handle date changes
   const handleDateChange = useCallback(
     (date: Date | null) => {
       const formattedDate = date ? dayjs(date).format("MM/DD/YYYY") : "";
@@ -60,7 +69,6 @@ export function DateInput<T>({
     [onChange]
   );
 
-  // Close picker when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -70,55 +78,48 @@ export function DateInput<T>({
         !pickerRef.current.contains(event.target as Node)
       ) {
         setShowPicker(false);
+        onBlur?.();
       }
     };
 
+    if (isTouched && isInvalid) {
+      validateField(form, name as string);
+    }
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onBlur]);
 
-  // Position picker below input with auto-positioning
   const calculatePosition = useCallback(() => {
     if (inputRef.current && pickerRef.current) {
       const inputRect = inputRef.current.getBoundingClientRect();
       const pickerHeight = pickerRef.current.offsetHeight || 300;
-
-      // Calculate space below and above
       const spaceBelow = window.innerHeight - inputRect.bottom - 20;
       const spaceAbove = inputRect.top - 20;
-
-      // Determine best position
       const shouldPositionAbove =
         spaceBelow < pickerHeight && spaceAbove > spaceBelow;
       setPosition(shouldPositionAbove ? "above" : "below");
     }
   }, []);
 
-  // Position picker below input with auto-positioning
   useEffect(() => {
     if (showPicker) {
-      // Add delay to ensure picker has rendered
       setTimeout(calculatePosition, 10);
-
-      const handleResize = () => {
-        calculatePosition();
-      };
-
+      const handleResize = () => calculatePosition();
       window.addEventListener("resize", handleResize);
       return () => window.removeEventListener("resize", handleResize);
     }
   }, [showPicker, calculatePosition]);
 
-  // Parse current value to Date object
   const currentDate =
-    value && dayjs(value, "MM/DD/YYYY").isValid()
+    typeof value === "string" && value && dayjs(value, "MM/DD/YYYY").isValid()
       ? dayjs(value, "MM/DD/YYYY").toDate()
       : null;
 
-  // Check if input has value
   const hasValue = !!value;
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const allowedKeys = [
       "Backspace",
       "Tab",
@@ -127,35 +128,26 @@ export function DateInput<T>({
       "Delete",
       "/",
     ];
-
     const isDigit = /^[0-9]$/.test(e.key);
-
     if (!isDigit && !allowedKeys.includes(e.key)) {
       e.preventDefault();
     }
   };
 
   const validateAndFormatDate = (input: string): string => {
-    // Remove any non-digit or non-slash characters
     let sanitized = input.replace(/[^\d/]/g, "");
-
-    // Auto-insert slashes as user types
     if (sanitized.length > 2 && sanitized[2] !== "/") {
       sanitized = sanitized.substring(0, 2) + "/" + sanitized.substring(2);
     }
     if (sanitized.length > 5 && sanitized[5] !== "/") {
       sanitized = sanitized.substring(0, 5) + "/" + sanitized.substring(5);
     }
-
-    // Limit total length to 10 characters (MM/DD/YYYY)
     if (sanitized.length > 10) {
       sanitized = sanitized.substring(0, 10);
     }
-
     return sanitized;
   };
 
-  // Check if input is a valid date
   const isValidDate = (dateStr: string): boolean => {
     return dayjs(dateStr, "MM/DD/YYYY", true).isValid();
   };
@@ -163,7 +155,6 @@ export function DateInput<T>({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = validateAndFormatDate(e.target.value);
     onChange(newValue);
-
     if (isValidDate(newValue)) {
       setShowPicker(false);
     }
@@ -172,45 +163,31 @@ export function DateInput<T>({
   useLayoutEffect(() => {
     if (showPicker && pickerRef.current) {
       const rect = pickerRef.current.getBoundingClientRect();
-      const screenWidth = window.innerWidth;
-
-      if (rect.right > screenWidth) {
-        setAlignRight(true);
-      } else {
-        setAlignRight(false);
-      }
+      setAlignRight(rect.right > window.innerWidth);
     }
   }, [showPicker]);
 
   return (
-    <div className="relative" ref={wrapperRef}>
+    <div className={cn("relative", className)} ref={wrapperRef}>
       {label && (
         <label
           htmlFor={`date-input-${String(name)}`}
-          className={cn(
-            "block text-sm font-medium mb-1",
-            disabled ? "text-gray-400" : "text-gray-700"
-          )}
+          className={getLabelClasses(disabled)}
         >
           {label}
-          {withAsterisk && <span className="text-red-500">*</span>}
+          {withAsterisk && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
 
-      <div className="relative flex items-center z-12">
-        {/* Icon prefix */}
+      <div className="relative flex items-center">
         <div
-          className="absolute left-2 text-gray-400"
-          onClick={(e) => {
-            if (disabled) {
-              e.preventDefault();
-              return;
-            }
-            setShowPicker(!showPicker);
-          }}
+          className={cn(
+            "absolute left-2",
+            disabled ? "text-gray-300" : "text-gray-400 cursor-pointer"
+          )}
+          onClick={() => !disabled && setShowPicker(!showPicker)}
         >
           <svg
-            xmlns="http://www.w3.org/2000/svg"
             className="h-4 w-4"
             fill="none"
             viewBox="0 0 24 24"
@@ -230,36 +207,35 @@ export function DateInput<T>({
           id={`date-input-${String(name)}`}
           type="text"
           value={(value as string) || ""}
-          onChange={(e) => {
-            if (!disabled) handleInputChange(e);
-          }}
+          onChange={handleInputChange}
           onBlur={onBlur}
-          onFocus={() => {
-            if (!disabled) setShowPicker(true);
-          }}
-          onKeyDown={(e) => {
-            if (!disabled) handleKeyDown(e);
-          }}
+          onFocus={() => !disabled && setShowPicker(true)}
+          onKeyDown={handleKeyDown}
           placeholder="MM/DD/YYYY"
           className={cn(
-            "w-full pl-8 pr-10 py-2 border rounded-md shadow-sm text-sm focus:outline-none focus:ring-1",
+            "w-full pl-8 pr-10 py-2.5 border rounded-md shadow-sm text-sm focus:outline-none focus:ring-1",
             disabled
               ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
               : isInvalid
-              ? "border-red-500 focus:ring-red-500"
-              : "border-gray-300 focus:ring-blue-500"
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-300 focus:ring-blue-500"
           )}
+          disabled={disabled}
         />
 
-        {/* Clear button (only shows when value exists) */}
         {hasValue && (
           <button
             type="button"
-            className="absolute right-3 text-gray-400 hover:text-gray-600"
             onClick={handleClear}
+            disabled={disabled}
+            className={cn(
+              "absolute right-3",
+              disabled
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-400 hover:text-gray-600"
+            )}
           >
             <svg
-              xmlns="http://www.w3.org/2000/svg"
               className="h-4 w-4"
               fill="none"
               viewBox="0 0 24 24"
@@ -280,33 +256,37 @@ export function DateInput<T>({
         <div
           ref={pickerRef}
           className={cn(
-            "date-picker absolute z-30 bg-white border border-gray-300 rounded-md shadow-lg min-w-[280px]",
-            position === "above" ? "bottom-full" : "mt-1",
-            alignRight ? "right-0" : "ml-[-3rem]"
+            "absolute z-30 bg-white border border-gray-300 rounded-md shadow-lg min-w-[280px]",
+            position === "above" ? "bottom-full mb-1" : "mt-1",
+            alignRight ? "right-0" : "left-0"
           )}
         >
           <DatePicker
             selected={currentDate}
             onChange={handleDateChange}
-            minDate={dayjs().startOf("day").toDate()}
+            minDate={minDate || dayjs().startOf("day").toDate()}
+            maxDate={maxDate}
           />
+
+          {isInvalid && error && (
+            <p className="mt-1 text-xs text-red-500 animate-fadeIn">{error}</p>
+          )}
         </div>
       )}
-
-      {isInvalid && <p className="mt-1 text-xs text-red-500">{error}</p>}
     </div>
   );
 }
 
-// Updated DatePicker without Today/Clear buttons
 const DatePicker = ({
   selected,
   onChange,
   minDate,
+  maxDate,
 }: {
   selected: Date | null;
   onChange: (date: Date | null) => void;
   minDate: Date;
+  maxDate?: Date;
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());

@@ -119,3 +119,39 @@ export interface UseFormReturnType<T extends object> {
   resetTouched: () => void;
   setInitialValues: (values: T) => void;
 }
+
+export interface BaseFieldProps<T extends object> {
+  label?: string;
+  name: Path<T>;
+  form: UseFormReturnType<T>;
+  withAsterisk?: boolean;
+  disabled?: boolean;
+  className?: string;
+}
+
+export interface InputFieldProps<T extends object> extends BaseFieldProps<T> {
+  placeholder?: string;
+  clearable?: boolean;
+}
+
+export interface TextInputProps<T extends object> extends InputFieldProps<T> {
+  type?: "text" | "email" | "password" | "number" | "tel" | "url";
+}
+
+export interface NumberInputProps<T extends object> extends InputFieldProps<T> {
+  prefix?: "currency" | "percent";
+  max?: number;
+  min?: number;
+  decimalScale?: number;
+}
+
+export interface TextareaProps<T extends object> extends InputFieldProps<T> {
+  rows?: number;
+}
+
+export interface CheckboxProps<T extends object> extends BaseFieldProps<T> {
+  description?: string;
+  containerClassName?: string;
+  size?: "sm" | "md" | "lg";
+  className?: string;
+}

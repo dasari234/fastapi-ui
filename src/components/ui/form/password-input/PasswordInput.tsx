@@ -1,29 +1,14 @@
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { cn } from "../../../../lib/utils";
-import type { Path, UseFormReturnType } from "../../../../lib/utils/use-form/types";
-
-
-interface CuratedInputProps {
-  placeholder?: string;
-  disabled?: boolean;
-  required?: boolean;
-  className?: string;
-  autoFocus?: boolean;
-  autoComplete?: string;
-  readOnly?: boolean;
-  maxLength?: number;
-  minLength?: number;
-  pattern?: string;
-  clearable?: boolean;
-}
-
-interface PasswordInputProps<T extends object> extends CuratedInputProps {
-  name: Path<T>;
-  form: UseFormReturnType<T>;
-  label?: string;
-  withAsterisk?: boolean;
-}
+import type { TextInputProps } from "../../../../lib/use-form/types";
+import {
+  getFieldError,
+  isFieldInvalid,
+  getInputClasses,
+  getLabelClasses,
+  validateField
+} from "../../../../lib/use-form/form-utils";
 
 export function PasswordInput<T extends object>({
   label,
@@ -31,74 +16,74 @@ export function PasswordInput<T extends object>({
   form,
   withAsterisk,
   placeholder,
-  disabled,
-  required,
+  disabled = false,
   className,
-  autoFocus,
-  autoComplete,
-  clearable,
-  readOnly,
-  maxLength,
-  minLength,
-  pattern,
-}: PasswordInputProps<T>) {
+  ...htmlAttributes
+}: TextInputProps<T> & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'name'>) {
   const [visible, setVisible] = useState(false);
   const { value, onChange, onBlur } = form.getInputProps(name);
-  const error = form.errors[name as string];
-  const isInvalid = !!error;
+  const error = getFieldError(form, name as string);
+  const isInvalid = isFieldInvalid(form, name as string);
+  const isTouched = form.touched[name as string];
+
+  const handleBlur = () => {
+    onBlur?.();
+    if (isTouched && isInvalid) {
+      validateField(form, name as string);
+    }
+  };
 
   const stringValue = value == null ? '' : String(value);
+  const hasValue = stringValue !== '';
 
   return (
-    <div>
+    <div className={cn("relative", className)}>
       {label && (
         <label
           htmlFor={name as string}
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className={getLabelClasses(disabled)}
         >
-          {label} {withAsterisk && <span className="text-red-500">*</span>}
+          {label}
+          {withAsterisk && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
 
       <div className="relative">
         <input
+          {...htmlAttributes}
           id={name as string}
           name={name as string}
           type={visible ? "text" : "password"}
           value={stringValue}
           onChange={onChange}
-          onBlur={onBlur}
+          onBlur={handleBlur}
           placeholder={placeholder}
-          disabled={disabled}
-          required={required}
-          autoFocus={autoFocus}
-          autoComplete={autoComplete || name as string}
-          readOnly={readOnly}
-          maxLength={maxLength}
-          minLength={minLength}
-          pattern={pattern}
+          autoComplete={name as string}
           className={cn(
-            "w-full px-3 py-2.5 border rounded-md shadow-sm text-sm focus:outline-none focus:ring-1",
-            stringValue && clearable && "pr-8",
-            disabled && "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed",
-            isInvalid && !disabled && "border-red-500 focus:ring-red-500",
-            !isInvalid && !disabled && "border-gray-300 focus:ring-blue-500 focus:border-blue-500",
-            className
+            getInputClasses(isInvalid, disabled, hasValue, false),
+            "pr-10"
           )}
+          disabled={disabled}
         />
 
         <button
           type="button"
           onClick={() => setVisible((v) => !v)}
-          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 focus:outline-none"
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 focus:outline-none transition-colors duration-200"
           aria-label={visible ? "Hide password" : "Show password"}
           disabled={disabled}
         >
-          {!visible ? <EyeOff size={18} /> : <Eye size={18} />}
+          {!visible ? (
+            <EyeOff size={18} className={disabled ? "text-gray-400" : "text-gray-600"} />
+          ) : (
+            <Eye size={18} className={disabled ? "text-gray-400" : "text-gray-600"} />
+          )}
         </button>
       </div>
 
-      {isInvalid && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {isInvalid && error && (
+        <p className="mt-1 text-xs text-red-500 animate-fadeIn">{error}</p>
+      )}
     </div>
   );
 }
