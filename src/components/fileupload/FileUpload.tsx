@@ -154,6 +154,8 @@ export default function FileUpload({
       formData.append("file", files[0]);
     }
 
+    formData.append('version_comment', 'Updated with new data');
+
     try {
       setUploading(true);
       let result;
@@ -208,7 +210,7 @@ export default function FileUpload({
       {files.length > 0 && (
         <div className="mt-4">
           <h3 className="text-md font-medium text-gray-700 mb-2">
-            {files.length} Files Selected
+            {files.length} File{files.length !== 1 ? "s" : ""} selected
           </h3>
           <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto">
             {files.map((file) => (

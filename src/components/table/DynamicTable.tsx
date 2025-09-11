@@ -63,7 +63,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   const fetchData = async (page: number = currentPage, overlay = true) => {
@@ -72,11 +72,13 @@ function DynamicTableInner<T extends Record<string, unknown>>(
       setShowOverlay(overlay);
       setLoading(true);
 
+      const getSortKey = (key?: string) => key?.split(".").pop();
+
       const urlWithParams = buildUrlWithParams(url, {
         limit: limit,
         page: page,
         search: searchQuery.trim() || undefined,
-        sort_by: sortBy || undefined,
+        sort_by: getSortKey(sortBy) || undefined,
         sort_order: sortBy ? sortOrder : undefined,
       });
 
@@ -146,7 +148,6 @@ function DynamicTableInner<T extends Record<string, unknown>>(
   //toggle sort
   const handleSort = (key: string, sortable?: boolean) => {
     if (!sortable) return;
-
     if (sortBy === key) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
@@ -154,6 +155,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
       setSortOrder("asc");
     }
     setCurrentPage(1);
+    fetchData(1, true)
   };
 
   return (
@@ -181,7 +183,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
                       key={String(col.key)}
                       className="group px-4 py-2 text-sm font-semibold text-gray-700 border-b"
                       scope="col"
-                      onClick={() => handleSort(String(col.key))}
+                      onClick={() => handleSort(String(col.key), col.sortable)}
                     >
                       <div className="flex justify-between">
                         <span className="w-min truncate">{col.label}</span>

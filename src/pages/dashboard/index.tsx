@@ -27,6 +27,14 @@ const DashboardPage: React.FC = () => {
     filename?: string;
     url?: string;
     processing_time_ms?: number;
+    updated_at?: string | Date;
+    version?: number;
+    upload_status?: string;
+    user_details?: {
+      first_name?: string;
+      last_name?: string;
+      email?: string;
+    };
   }
 
   const handleView = async (row: FileRow) => {
@@ -81,6 +89,7 @@ const DashboardPage: React.FC = () => {
 
   const columns = [
     { key: "original_filename", label: "File Name", sortable: true },
+    { key: "version", label: "Version", sortable: true },
     {
       key: "file_size",
       label: "Size (MB)",
@@ -91,7 +100,14 @@ const DashboardPage: React.FC = () => {
     {
       key: "created_at",
       label: "Created At",
+      sortable: true,
       render: (row: FileRow) => formatDate(row.created_at),
+    },
+    {
+      key: "updated_at",
+      label: "Updated At",
+      sortable: true,
+      render: (row: FileRow) => row.updated_at ? formatDate(row.updated_at) : "—",
     },
     {
       key: "upload_status",

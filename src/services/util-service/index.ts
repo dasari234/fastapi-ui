@@ -2,7 +2,6 @@ import { errorHandler } from "../../lib/utils/error-handler";
 import { HttpMethod } from "../../types";
 import UseApi from "../use-api";
 
-
 export class UtilService {
   static async get<T>(url: string): Promise<T> {
     try {
