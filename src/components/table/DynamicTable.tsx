@@ -185,7 +185,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
                       scope="col"
                       onClick={() => handleSort(String(col.key), col.sortable)}
                     >
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span className="w-min truncate">{col.label}</span>
                         {col.sortable &&
                           (isActive ? (
