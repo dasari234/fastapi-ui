@@ -56,9 +56,7 @@ const FileItem = ({ file, onRemove }: FileItemProps) => {
     <div className="flex items-center justify-between p-2 border rounded-md bg-white shadow-sm">
       <div className="flex items-center gap-2">
         <FileTypeIcon category={category} />
-        <span className="text-sm text-gray-700 truncate max-w-[220px]">
-          {file.name}
-        </span>
+        <span className="text-sm text-gray-700 break-all">{file.name}</span>
       </div>
       <button
         className="ml-2 p-1 text-gray-400 hover:text-red-500 transition rounded-full bg-gray-100 hover:bg-gray-200"
@@ -109,9 +107,23 @@ export default function FileUpload({
       setError(null);
     }
 
-    setFiles((prev: File[]) => [...prev, ...valid]);
+    setFiles((prev: File[]) => {
+      const existingNames = new Set(prev.map((f) => f.name));
+      const duplicates = valid.filter((f) => existingNames.has(f.name));
 
-    // Reset the input to allow selecting the same files again
+      if (duplicates.length > 0) {
+        setError(
+          `Duplicate file(s) not allowed: ${duplicates
+            .map((d) => d.name)
+            .join(", ")}`
+        );
+      }
+
+      const uniqueFiles = valid.filter((f) => !existingNames.has(f.name));
+      return [...prev, ...uniqueFiles];
+    });
+
+    // Reset the input so user can select the same file again later
     if (fileInputRef.current) {
       (fileInputRef.current as HTMLInputElement).value = "";
     }
@@ -196,9 +208,9 @@ export default function FileUpload({
       {files.length > 0 && (
         <div className="mt-4">
           <h3 className="text-md font-medium text-gray-700 mb-2">
-            Selected Files
+            {files.length} Files Selected
           </h3>
-          <div className="flex gap-3 space-y-2 max-h-60 overflow-y-auto">
+          <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto">
             {files.map((file) => (
               <FileItem key={file.name} file={file} onRemove={removeFile} />
             ))}

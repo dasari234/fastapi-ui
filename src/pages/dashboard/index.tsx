@@ -1,4 +1,4 @@
-import { Download, FileSpreadsheet, Trash2 } from "lucide-react";
+import { Download, FileSpreadsheet, Loader2, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import FileUpload from "../../components/fileupload/FileUpload";
@@ -15,6 +15,7 @@ const DashboardPage: React.FC = () => {
   const tableRef = useRef<DynamicTableRef>(null);
   const [rowdata, setRowdata] = useState<FileRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   interface FileRow extends Record<string, unknown> {
     id: number;
@@ -25,24 +26,29 @@ const DashboardPage: React.FC = () => {
     score?: number;
     filename?: string;
     url?: string;
+    processing_time_ms?: number;
   }
 
   const handleView = async (row: FileRow) => {
     try {
       setOpen(true);
-      const response = await S3Service.downloadFile(row.s3_key || "");
+      setLoading(true);
+      const response = await S3Service.viewFile(row.s3_key || "");
       if (response.success) {
         setRowdata(response.data || "");
       }
     } catch (err) {
       setOpen(false);
+      setLoading(false);
       console.error("Failed to delete", err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDelete = async (row: FileRow) => {
     try {
-      const response = await S3Service.viewFile(row.s3_key || "");
+      const response = await S3Service.deleteFile(row.s3_key || "");
       if (Object.hasOwn(response, "deleted_key")) {
         toast.success("File deleted successfully");
         tableRef.current?.refresh();
@@ -57,7 +63,7 @@ const DashboardPage: React.FC = () => {
       const response = await S3Service.downloadFile(row.s3_key || "");
       if (response.success) {
         toast.success("File downloaded successfully");
-        downloadFile(response.data.url);
+        downloadFile(response.data.url, response.data.filename);
       }
     } catch (err) {
       console.error("Failed to delete", err);
@@ -74,13 +80,14 @@ const DashboardPage: React.FC = () => {
   }, []);
 
   const columns = [
-    { key: "original_filename", label: "File Name" },
+    { key: "original_filename", label: "File Name", sortable: true },
     {
       key: "file_size",
       label: "Size (MB)",
+      sortable: true,
       render: (row: FileRow) => `${(row.file_size / 1000).toFixed(2)}`,
     },
-    { key: "user_details.first_name", label: "Uploaded By" },
+    { key: "user_details.first_name", label: "Uploaded By", sortable: true },
     {
       key: "created_at",
       label: "Created At",
@@ -89,18 +96,30 @@ const DashboardPage: React.FC = () => {
     {
       key: "upload_status",
       label: "Status",
+      sortable: true,
     },
     {
       key: "score",
       label: "Score",
+      sortable: true,
       render: (row: FileRow) =>
         row.score !== undefined && row.score !== null
-          ? (row.score / 100).toFixed(2)
+          ? row.score.toFixed(2)
+          : "—",
+    },
+    {
+      key: "processing_time_ms",
+      label: "Process Time",
+      sortable: true,
+      render: (row: FileRow) =>
+        row.processing_time_ms !== undefined && row.processing_time_ms !== null
+          ? `${row.processing_time_ms.toFixed(2)}ms`
           : "—",
     },
     {
       key: "actions",
       label: "Actions",
+      sortable: false,
       render: (row: FileRow) => (
         <div className="flex gap-2">
           <Tooltip content="View" maxWidth="max-w-xl">
@@ -160,7 +179,16 @@ const DashboardPage: React.FC = () => {
         className="max-w-4xl w-full"
       >
         <div className="max-h-[80vh] overflow-y-auto">
-          <PDFView pdfUrl={rowdata?.url || ""} className="mt-4" />
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-3" />
+              <p className="text-gray-600 text-sm">Loading file...</p>
+            </div>
+          ) : rowdata?.url ? (
+            <PDFView pdfUrl={rowdata.url} className="mt-4" />
+          ) : (
+            <p className="text-gray-500">No file available</p>
+          )}
         </div>
       </Modal>
     </>

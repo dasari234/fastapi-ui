@@ -75,6 +75,8 @@ function UserLogin() {
                 <TextInput<Login>
                   label="Email"
                   name="username"
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  //@ts-expect-error
                   form={form}
                   withAsterisk
                 />
@@ -84,6 +86,8 @@ function UserLogin() {
                 <PasswordInput<Login>
                   label="Password"
                   name="password"
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  //@ts-expect-error
                   form={form}
                   withAsterisk
                 />

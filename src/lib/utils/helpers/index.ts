@@ -84,10 +84,10 @@ export const buildUrlWithParams = (baseUrl: string, params: Record<string, strin
 //   }
 // }
 
-export function downloadFile(url: string) {
+export function downloadFile(url: string, filename?: string) {
   const link = document.createElement("a");
   link.href = url;
-  link.download = ""; 
+  link.download = filename ?? "";
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

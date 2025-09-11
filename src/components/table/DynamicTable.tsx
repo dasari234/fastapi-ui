@@ -1,3 +1,4 @@
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import React, {
   forwardRef,
   useEffect,
@@ -16,6 +17,7 @@ interface Column<T> {
   key: keyof T | string;
   label: string;
   render?: (row: T) => React.ReactNode;
+  sortable?: boolean;
 }
 
 interface ApiResponse<T> {
@@ -61,6 +63,8 @@ function DynamicTableInner<T extends Record<string, unknown>>(
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   const fetchData = async (page: number = currentPage, overlay = true) => {
     try {
@@ -72,6 +76,8 @@ function DynamicTableInner<T extends Record<string, unknown>>(
         limit: limit,
         page: page,
         search: searchQuery.trim() || undefined,
+        sort_by: sortBy || undefined,
+        sort_order: sortBy ? sortOrder : undefined,
       });
 
       const response = (await UtilService.get(urlWithParams)) as ApiResponse<T>;
@@ -81,7 +87,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
           toast.error((response && response.message) || "Failed to fetch data");
           setTotalPages(0);
           setData([]);
-          return
+          return;
         }
 
         const rows =
@@ -137,13 +143,21 @@ function DynamicTableInner<T extends Record<string, unknown>>(
     setSearchQuery(query);
   };
 
+  //toggle sort
+  const handleSort = (key: string, sortable?: boolean) => {
+    if (!sortable) return;
+
+    if (sortBy === key) {
+      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(key);
+      setSortOrder("asc");
+    }
+    setCurrentPage(1);
+  };
+
   return (
     <div className="relative">
-      {/* {showOverlay && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/70 z-10">
-          <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-        </div>
-      )} */}
       <LoadingOverlay visible={showOverlay} />
 
       {error ? (
@@ -151,65 +165,83 @@ function DynamicTableInner<T extends Record<string, unknown>>(
       ) : (
         <>
           <div className="flex justify-between p-2 bg-white">
-            <SearchInput onSearch={handleSearch} placeholder="Search files..." />
+            <SearchInput
+              onSearch={handleSearch}
+              placeholder="Search files..."
+            />
           </div>
-
 
           <table className="min-w-full border border-gray-200 bg-white shadow-md rounded-lg">
             <thead>
               <tr className="bg-gray-100 text-left">
-                {headers.map((col) => (
-                  <th
-                    key={String(col.key)}
-                    className="px-4 py-2 text-sm font-semibold text-gray-700 border-b"
-                    scope="col"
-                  >
-                    {col.label}
-                  </th>
-                ))}
+                {headers.map((col) => {
+                  const isActive = sortBy === col.key;
+                  return (
+                    <th
+                      key={String(col.key)}
+                      className="group px-4 py-2 text-sm font-semibold text-gray-700 border-b"
+                      scope="col"
+                      onClick={() => handleSort(String(col.key))}
+                    >
+                      <div className="flex justify-between">
+                        <span className="w-min truncate">{col.label}</span>
+                        {col.sortable &&
+                          (isActive ? (
+                            sortOrder === "asc" ? (
+                              <ArrowUp className="w-4 h-4 opacity-40 group-hover:opacity-70" />
+                            ) : (
+                              <ArrowDown className="w-4 h-4 opacity-40 group-hover:opacity-70" />
+                            )
+                          ) : (
+                            <ArrowUpDown className="w-4 h-4 opacity-40 group-hover:opacity-70" />
+                          ))}
+                      </div>
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
 
             <tbody>
               {data.length > 0
                 ? data.map((row, idx) => (
-                  <tr
-                    key={idx}
-                    className="hover:bg-gray-50 transition-colors duration-150"
-                  >
-                    {headers.map((col) => {
-                      let value: React.ReactNode;
-                      if (col.render) {
-                        value = col.render(row);
-                      } else {
-                        const nested = getNestedValue(row, String(col.key));
-                        value =
-                          nested !== undefined && nested !== null
-                            ? String(nested)
-                            : "";
-                      }
-
-                      return (
-                        <td
-                          key={String(col.key)}
-                          className="px-4 py-2 text-sm text-gray-700 border-b"
-                        >
-                          {value !== undefined && value !== null ? value : ""}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))
-                : !loading && (
-                  <tr>
-                    <td
-                      colSpan={headers.length}
-                      className="py-4 text-center text-md text-gray-600"
+                    <tr
+                      key={idx}
+                      className="hover:bg-gray-50 transition-colors duration-150"
                     >
-                      No records found.
-                    </td>
-                  </tr>
-                )}
+                      {headers.map((col) => {
+                        let value: React.ReactNode;
+                        if (col.render) {
+                          value = col.render(row);
+                        } else {
+                          const nested = getNestedValue(row, String(col.key));
+                          value =
+                            nested !== undefined && nested !== null
+                              ? String(nested)
+                              : "";
+                        }
+
+                        return (
+                          <td
+                            key={String(col.key)}
+                            className="px-4 py-2 text-sm text-gray-700 border-b"
+                          >
+                            {value !== undefined && value !== null ? value : ""}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))
+                : !loading && (
+                    <tr>
+                      <td
+                        colSpan={headers.length}
+                        className="py-4 text-center text-md text-gray-600"
+                      >
+                        No records found.
+                      </td>
+                    </tr>
+                  )}
             </tbody>
           </table>
 
