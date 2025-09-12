@@ -1,13 +1,12 @@
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 import Footer from "../../../components/Footer";
 import { Button } from "../../../components/ui/Button";
-import { useAuthContext } from "../../../hooks";
-import type { Login } from "../../../types";
-// import { isNotEmpty, useForm } from "@mantine/form";
-import { Link } from "react-router-dom";
 import { PasswordInput } from "../../../components/ui/form/password-input/PasswordInput";
 import { TextInput } from "../../../components/ui/form/text-input/TextInput";
+import { useAuthContext } from "../../../hooks";
 import { useForm } from "../../../lib/use-form";
+import type { Login } from "../../../types";
 
 function UserLogin() {
   const { login, isLoading } = useAuthContext();
