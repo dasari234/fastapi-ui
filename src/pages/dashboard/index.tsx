@@ -16,6 +16,7 @@ const DashboardPage: React.FC = () => {
   const [rowdata, setRowdata] = useState<FileRow | null>(null);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isDownload, setIsDownload] = useState(false);
 
   interface FileRow extends Record<string, unknown> {
     id: number;
@@ -68,10 +69,12 @@ const DashboardPage: React.FC = () => {
 
   const handleDownload = async (row: FileRow) => {
     try {
+      setIsDownload(true);
       const response = await S3Service.downloadFile(row.s3_key || "");
       if (response.success) {
         toast.success("File downloaded successfully");
         downloadFile(response.data.url, response.data.filename);
+        setIsDownload(false);
       }
     } catch (err) {
       console.error("Failed to delete", err);
@@ -107,7 +110,8 @@ const DashboardPage: React.FC = () => {
       key: "updated_at",
       label: "Updated At",
       sortable: true,
-      render: (row: FileRow) => row.updated_at ? formatDate(row.updated_at) : "—",
+      render: (row: FileRow) =>
+        row.updated_at ? formatDate(row.updated_at) : "—",
     },
     {
       key: "upload_status",
@@ -204,6 +208,22 @@ const DashboardPage: React.FC = () => {
             <PDFView pdfUrl={rowdata.url} className="mt-4" />
           ) : (
             <p className="text-gray-500">No file available</p>
+          )}
+        </div>
+      </Modal>
+
+      <Modal
+        open={isDownload}
+        onClose={() => setIsDownload(false)}
+        showCloseButton={false}
+        className="max-w-1/4"
+      >
+        <div className="max-h-[30vh] overflow-y-hidden">
+          {isDownload && (
+            <div className="flex flex-col items-center justify-center">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-3" />
+              <p className="text-gray-600 text-sm">Downloading file...</p>
+            </div>
           )}
         </div>
       </Modal>

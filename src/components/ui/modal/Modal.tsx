@@ -21,7 +21,7 @@ export default function Modal({
   title,
   children,
   className,
-  closeOnOverlayClick = true,
+  closeOnOverlayClick = false,
   showCloseButton = true,
   disableBackdropBlur = false,
 }: ModalProps) {
