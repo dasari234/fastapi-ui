@@ -22,25 +22,7 @@ function UserLogin() {
       password: {
         required: "Password is required",
         minLength: 6,
-        // message: "Password must be at least 6 characters",
       },
-
-      // username: (value) => {
-      //   const notEmptyValidation = isNotEmpty("Email is required")(value);
-      //   const emailValidation =
-      //     /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/.test(value)
-      //       ? null
-      //       : "Invalid email address";
-
-      //   return notEmptyValidation || emailValidation;
-      // },
-      // password: (value) => {
-      //   const isNotEmptyValidation = isNotEmpty("Password is required")(value);
-      //   const minLengthValidation =
-      //     value.length >= 6 ? null : "Password must be at least 6 characters";
-
-      //   return isNotEmptyValidation || minLengthValidation;
-      // },
     },
     validateInputOnBlur: true,
   });

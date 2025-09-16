@@ -64,11 +64,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      if (user.role === "admin") {
-        navigate("/admin", { replace: true });
-      } else {
-        navigate("/", { replace: true });
+      const currentPath = window.location.pathname;
+
+      // Only redirect from login page or if on a non-existent route that's not protected
+      if (currentPath === "/login" || currentPath === "/") {
+        if (user.role === "admin") {
+          navigate("/admin", { replace: true });
+        } else {
+          navigate("/", { replace: true });
+        }
       }
+      // Don't redirect from other pages including non-existent routes
     }
   }, [isAuthenticated, user, navigate]);
 
@@ -118,6 +124,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         setIsAuthenticated(true);
         setLocalStorage("user", JSON.stringify(user));
         toast.success("Login successful!");
+        // setTimeout(() => {
+        //   // if (isAuthenticated && user) {
+        //     if (user?.role === "admin") {
+        //       navigate("/admin", { replace: true });
+        //     } else {
+        //       navigate("/", { replace: true });
+        //     }
+        //   // }
+        // }, 100);
       }
     } catch (err) {
       clearSession();

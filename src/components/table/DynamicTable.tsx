@@ -20,13 +20,15 @@ interface Column<T> {
   sortable?: boolean;
 }
 
+interface ApiResponseData<T> {
+  total_pages?: number;
+  [key: string]: T[] | number | undefined;
+}
+
 interface ApiResponse<T> {
   success: boolean;
   message?: string;
-  data?: {
-    records?: T[];
-    total_pages?: number;
-  };
+  data?: ApiResponseData<T>;
 }
 
 export interface DynamicTableRef {
@@ -37,6 +39,7 @@ interface DynamicTableProps<T> {
   url: string;
   columns?: Column<T>[];
   limit?: number;
+  responseKey?: string | undefined
 }
 
 /**
@@ -53,7 +56,7 @@ function getNestedValue(obj: unknown, path: string): unknown {
 }
 
 function DynamicTableInner<T extends Record<string, unknown>>(
-  { url, columns, limit = 25 }: DynamicTableProps<T>,
+  { url, columns, limit = 25, responseKey }: DynamicTableProps<T>,
   ref: React.Ref<DynamicTableRef>
 ) {
   const [data, setData] = useState<T[]>([]);
@@ -91,10 +94,12 @@ function DynamicTableInner<T extends Record<string, unknown>>(
           setData([]);
           return;
         }
-
+        
+        const dataObj = response.data as ApiResponseData<T> | undefined;
+        const key = responseKey ?? (dataObj ? Object.keys(dataObj).find(k => Array.isArray(dataObj[k])) : undefined);
         const rows =
-          response.data && Array.isArray(response.data.records)
-            ? response.data.records
+          dataObj && key && Array.isArray(dataObj[key])
+            ? dataObj[key] as T[]
             : [];
 
         const totalPages =

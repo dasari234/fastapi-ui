@@ -1,11 +1,11 @@
 import { lazy } from "react";
-import { Navigate, type RouteObject } from "react-router-dom";
+import { type RouteObject } from "react-router-dom";
 
+import NotFound from "../pages/not-found";
 import LoginRedirect from "./LoginRedirect";
 import ProtectedRoute from "./ProtectedRoute";
 
 const RootLayout = lazy(() => import("../layouts/RootLayout"));
-const LoginPage = lazy(() => import("../pages/auth/login"));
 const Unauthorized = lazy(() => import("../pages/unauthorized"));
 
 // Lazy load the HomePage component
@@ -19,7 +19,7 @@ export const nonAuthRoutes: RouteObject[] = [
   },
   {
     path: "*",
-    element: <LoginPage />,
+    element: <NotFound />,
   },
 ];
 
@@ -64,6 +64,6 @@ export const authRoutes: RouteObject[] = [
   },
   {
     path: "*",
-    element: <Navigate to="/" replace />,
+    element: <NotFound />,
   },
 ];

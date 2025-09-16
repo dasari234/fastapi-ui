@@ -188,6 +188,7 @@ const DashboardPage: React.FC = () => {
         url="/files"
         limit={10}
         ref={tableRef}
+        responseKey="records"
         columns={columns}
       />
 

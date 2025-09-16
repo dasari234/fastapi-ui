@@ -88,6 +88,7 @@ const AdminDashboardPage: React.FC = () => {
 
   useEffect(() => {
     document.title = "Dashboard";
+    // fetchData();
   }, []);
 
   const columns = [
@@ -179,6 +180,18 @@ const AdminDashboardPage: React.FC = () => {
     },
   ];
 
+  // const fetchData = async () => {
+  //   try {
+  //     const response = await UtilService.get("/users");
+
+  //     if (response && typeof response === "object" && "success" in response) {
+  //       console.log(response);
+  //     }
+  //   } catch (err) {
+  //     console.error("Fetch error:", err);
+  //   }
+  // };
+
   return (
     <>
       <div className="flex items-center justify-center mb-6">
@@ -189,6 +202,7 @@ const AdminDashboardPage: React.FC = () => {
         limit={10}
         ref={tableRef}
         columns={columns}
+        responseKey="records"
       />
 
       <Modal
