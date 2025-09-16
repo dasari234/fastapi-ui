@@ -1,65 +1,69 @@
-import type { RouteObject } from "react-router-dom";
 import { lazy } from "react";
+import { Navigate, type RouteObject } from "react-router-dom";
+
+import LoginRedirect from "./LoginRedirect";
+import ProtectedRoute from "./ProtectedRoute";
 
 const RootLayout = lazy(() => import("../layouts/RootLayout"));
 const LoginPage = lazy(() => import("../pages/auth/login"));
+const Unauthorized = lazy(() => import("../pages/unauthorized"));
 
 // Lazy load the HomePage component
-const DashboardPage = lazy(() => import("../pages/dashboard"));
-
+const UserDashboardPage = lazy(() => import("../pages/dashboard"));
+const AdminDashboardPage = lazy(() => import("../pages/admin"));
 
 export const nonAuthRoutes: RouteObject[] = [
-    {
-        path: "/login",
-        element: <LoginPage />,
-        index: true,
-    },
-    {
-        path: "*",
-        element: <LoginPage />,
-    },
+  {
+    path: "/login",
+    element: <LoginRedirect />,
+  },
+  {
+    path: "*",
+    element: <LoginPage />,
+  },
 ];
 
 export const authRoutes: RouteObject[] = [
-    {
-        path: "/",
-        element: <RootLayout />,
-        children: [
-            {
-                index: true,
-                element: <DashboardPage />,
-            },
-        ],
-    },
-    //   {
-    //     path: "/home",
-    //     element: <RootLayout />,
-    //     children: [
-    //       {
-    //         index: true,
-    //         element: <HomePage />,
-    //       },
-    //     ],
-    //   },
-    //   {
-    //     path: "/sites",
-    //     element: <RootLayout />,
-    //     children: [
-    //       {
-    //         index: true,
-    //         element: <SiteListPage />,
-    //       },
-    //     ],
-    //   },
-    //   {
-    //     path: "/sites/site/:siteId",
-    //     element: <RootLayout />,
-    //     children: [
-    //       {
-    //         index: true,
-    //         element: <SiteDetailsPage />,
-    //       },
-    //     ],
-    //   },
-
+  {
+    path: "/",
+    element: <RootLayout />,
+    children: [
+      {
+        index: true,
+        element: (
+          <ProtectedRoute requiredRole="user">
+            <UserDashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+    ],
+  },
+  {
+    path: "/admin",
+    element: <RootLayout />,
+    children: [
+      {
+        index: true,
+        element: (
+          <ProtectedRoute requiredRole="admin">
+            <AdminDashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+    ],
+  },
+  {
+    path: "/unauthorized",
+    element: <RootLayout />,
+    children: [
+      {
+        index: true,
+        element: <Unauthorized />,
+      },
+    ],
+  },
+  {
+    path: "*",
+    element: <Navigate to="/" replace />,
+  },
 ];

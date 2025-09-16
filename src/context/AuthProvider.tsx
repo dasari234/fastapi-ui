@@ -62,6 +62,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.role === "admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
+
   // Auth Handlers
   const handleLogin = async (formData: Login) => {
     setIsLoading(true);
@@ -103,11 +113,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
       saveSession(session);
       if (loginResponse?.success) {
-        setUser(loginResponse?.data?.user ?? null);
+        const user = loginResponse?.data?.user ?? null;
+        setUser(user);
         setIsAuthenticated(true);
-        setLocalStorage("user", JSON.stringify(loginResponse?.data?.user));
+        setLocalStorage("user", JSON.stringify(user));
         toast.success("Login successful!");
-        navigate("/");
       }
     } catch (err) {
       clearSession();
@@ -154,7 +164,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       const newSession: Session = {
         access_token: resp.access_token,
         refresh_token: resp.refresh_token,
-        expiresAt: Date.now() + 60 * 60 * 1000, 
+        expiresAt: Date.now() + 60 * 60 * 1000,
       };
       saveSession(newSession);
     } catch (err) {
