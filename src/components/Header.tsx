@@ -25,7 +25,7 @@ export default function Header() {
 
       const userFullname = `${storedUser?.first_name ?? ""} ${
         storedUser?.last_name ?? ""
-      } (${storedUser.role})`;
+      } (${storedUser?.role})`;
       
       setUsername(initials);
       setUserRole(userFullname);

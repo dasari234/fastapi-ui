@@ -2,24 +2,14 @@ import { Suspense, useEffect } from "react";
 import { BrowserRouter, useRoutes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { AuthProvider } from "./context/AuthProvider";
-import { useAuthContext } from "./hooks";
 import "./index.css";
-import { authRoutes, nonAuthRoutes } from "./routes";
+import { routes } from "./routes";
 
-
-const LoadingSpinner = () => {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-      <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mb-4"></div>
-      <p className="text-gray-600">Loading...</p>
-    </div>
-  );
-};
+import PageLoadingSpinner from "./components/loading-spinner/LoadingSpinner";
 
 const AppRoutes = () => {
-  const { isAuthenticated } = useAuthContext();
-  const routes = useRoutes(isAuthenticated ? authRoutes : nonAuthRoutes);
-  return routes;
+  const routing = useRoutes(routes);
+  return routing;
 };
 
 function App() {
@@ -32,9 +22,9 @@ function App() {
 
   return (
     <BrowserRouter>
-      <ToastContainer position="top-right" autoClose={2000} />
+      <ToastContainer position="top-right" autoClose={1500} />
       <AuthProvider>
-        <Suspense fallback={<LoadingSpinner />}>
+        <Suspense fallback={<PageLoadingSpinner />}>
           <AppRoutes />
         </Suspense>
       </AuthProvider>

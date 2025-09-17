@@ -10,12 +10,20 @@ class AuthService {
     });
   }
 
-  public async refreshToken(refresh_token: Record<string, string>): Promise<undefined> {
+  public async refreshToken(
+    refresh_token: Record<string, string>
+  ): Promise<undefined> {
     return UseApi.request(HttpMethod.POST, "/auth/refresh", {
       data: refresh_token,
       headers: {
         "Content-Type": "application/json",
       },
+    });
+  }
+
+  public async logout(): Promise<undefined> {
+    return UseApi.request(HttpMethod.POST, "/auth/logout", {
+      data: {},
     });
   }
 

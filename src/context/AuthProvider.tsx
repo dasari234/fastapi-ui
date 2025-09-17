@@ -62,22 +62,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      const currentPath = window.location.pathname;
-
-      // Only redirect from login page or if on a non-existent route that's not protected
-      if (currentPath === "/login" || currentPath === "/") {
-        if (user.role === "admin") {
-          navigate("/admin", { replace: true });
-        } else {
-          navigate("/", { replace: true });
-        }
-      }
-      // Don't redirect from other pages including non-existent routes
-    }
-  }, [isAuthenticated, user, navigate]);
-
   // Auth Handlers
   const handleLogin = async (formData: Login) => {
     setIsLoading(true);
@@ -124,15 +108,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         setIsAuthenticated(true);
         setLocalStorage("user", JSON.stringify(user));
         toast.success("Login successful!");
-        // setTimeout(() => {
-        //   // if (isAuthenticated && user) {
-        //     if (user?.role === "admin") {
-        //       navigate("/admin", { replace: true });
-        //     } else {
-        //       navigate("/", { replace: true });
-        //     }
-        //   // }
-        // }, 100);
+        if (user?.role === "admin") {
+          navigate("/admin", { replace: true });
+        } else {
+          navigate("/", { replace: true });
+        }
       }
     } catch (err) {
       clearSession();
@@ -143,11 +123,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const handleLogout = () => {
-    clearSession();
-    setUser(null);
-    setIsAuthenticated(false);
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      const response = (await AuthService.logout()) as
+        | { success?: boolean }
+        | undefined;
+
+      if (response?.success) {
+        toast.success("Logged out successfully");
+      } else {
+        toast.warn("Logout failed on server, clearing session locally");
+      }
+    } catch (err) {
+      console.error("Logout error:", err);
+      toast.error("Unexpected error during logout");
+    } finally {
+      setIsAuthenticated(false);
+      clearSession();
+      navigate("/login", { replace: true });
+      setUser(null);
+    }
   };
 
   // Token Refresh
