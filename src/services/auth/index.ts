@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpMethod } from "../../types";
 import UseApi from "../use-api";
 
@@ -27,8 +26,28 @@ class AuthService {
     });
   }
 
-  public async getUser(): Promise<any> {
-    return UseApi.request(HttpMethod.GET, "/users/me", {});
+  public async changePassword(newPassword: string): Promise<undefined> {
+    return UseApi.request(HttpMethod.POST, "/auth/reset-password", {
+      data: {
+        new_password: newPassword,
+      },
+    });
+  }
+
+  public async resetPassword(payload: Record<string, string>): Promise<undefined> {
+    return UseApi.request(HttpMethod.POST, "/auth/reset-password", {
+      data: {
+        payload,
+      },
+    });
+  }
+
+  public async forgotPassword(email: string): Promise<undefined> {
+    return UseApi.request(HttpMethod.POST, "/auth/forgot-password", {
+      data: {
+        email: email,
+      },
+    });
   }
 }
 

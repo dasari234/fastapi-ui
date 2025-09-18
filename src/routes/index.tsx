@@ -9,6 +9,8 @@ const Unauthorized = lazy(() => import("../pages/unauthorized"));
 const LoginPage = lazy(() => import("../pages/auth/login"));
 const UserDashboardPage = lazy(() => import("../pages/dashboard"));
 const AdminDashboardPage = lazy(() => import("../pages/admin"));
+const ForgotPasswordPage = lazy(() => import("../pages/auth/forgot-password"));
+const RestPasswordPage = lazy(() => import("../pages/auth/reset-password"));
 
 export const routes: RouteObject[] = [
   {
@@ -40,6 +42,26 @@ export const routes: RouteObject[] = [
             <AdminDashboardPage />
           </ProtectedRoute>
         ),
+      },
+    ],
+  },
+  {
+    path: "/forgot-password",
+    element: <RootLayout />,
+    children: [
+      {
+        index: true,
+        element: <ForgotPasswordPage />,
+      },
+    ],
+  },
+  {
+    path: "/reset-password",
+    element: <RootLayout />,
+    children: [
+      {
+        index: true,
+        element: <RestPasswordPage />,
       },
     ],
   },

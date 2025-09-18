@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import AuthService from "../services/auth";
+import UserService from "../services/user";
 import { UserContext } from "./AuthContext";
 
 import {
@@ -209,7 +210,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       setUser(storedUser);
     } else {
       // Or re-fetch if not stored
-      AuthService.getUser()
+      UserService.getUser()
         .then((res) => {
           if (res?.success) {
             setUser(res.data);
