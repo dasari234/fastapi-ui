@@ -18,7 +18,16 @@ function UserLogin() {
     },
 
     rules: {
-      username: { required: "Email is required", pattern: /^\S+@\S+$/i },
+      username: {
+        required: "Email is required",
+        validate: (value: unknown) => {
+          if (typeof value !== "string") return "Invalid input";
+          if (!value.includes("@") || !value.includes(".")) {
+            return "Invalid email address";
+          }
+          return true;
+        },
+      },
       password: {
         required: "Password is required",
         minLength: 6,
