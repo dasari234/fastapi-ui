@@ -1,7 +1,10 @@
 import { lazy } from "react";
-import { type RouteObject } from "react-router-dom";
+import type { RouteObject } from "react-router-dom";
 
+import UserManagement from "../pages/admin/user-management";
+import UserSignup from "../pages/auth/register";
 import NotFound from "../pages/not-found";
+import Profile from "../pages/profile";
 import ProtectedRoute from "./ProtectedRoute";
 
 const RootLayout = lazy(() => import("../layouts/RootLayout"));
@@ -16,6 +19,10 @@ export const routes: RouteObject[] = [
   {
     path: "/login",
     element: <LoginPage />,
+  },
+  {
+    path: "/register",
+    element: <UserSignup />,
   },
   {
     path: "/",
@@ -40,6 +47,30 @@ export const routes: RouteObject[] = [
         element: (
           <ProtectedRoute requiredRole="admin">
             <AdminDashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+    ],
+  },
+  {
+    path: "/profile",
+    element: <RootLayout />,
+    children: [
+      {
+        index: true,
+        element: <Profile />,
+      },
+    ],
+  },
+  {
+    path: "/admin/user-management",
+    element: <RootLayout />,
+    children: [
+      {
+        index: true,
+        element: (
+          <ProtectedRoute requiredRole="admin">
+            <UserManagement />
           </ProtectedRoute>
         ),
       },

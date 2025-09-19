@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, UserRoundPlus } from "lucide-react";
 import React, {
   forwardRef,
   useEffect,
@@ -9,6 +9,7 @@ import React, {
 import { toast } from "react-toastify";
 import { buildUrlWithParams } from "../../lib/utils";
 import { UtilService } from "../../services/util-service";
+import { Button } from "../ui/Button";
 import { LoadingOverlay } from "../ui/loading-overlay/LoadingOverlay";
 import Pagination from "../ui/pagination/Pagination";
 import SearchInput from "../ui/search/SearchInput";
@@ -20,15 +21,19 @@ interface Column<T> {
   sortable?: boolean;
 }
 
-interface ApiResponseData<T> {
-  total_pages?: number;
-  [key: string]: T[] | number | undefined;
+interface ActionButton {
+  label: string;
+  onClick: () => void;
 }
 
 interface ApiResponse<T> {
   success: boolean;
   message?: string;
-  data?: ApiResponseData<T>;
+  data?: {
+    [key: string]: unknown;
+    records?: T[];
+    total_pages?: number;
+  };
 }
 
 export interface DynamicTableRef {
@@ -39,7 +44,8 @@ interface DynamicTableProps<T> {
   url: string;
   columns?: Column<T>[];
   limit?: number;
-  responseKey?: string | undefined
+  responseKey?: string | undefined;
+  actionButton?: ActionButton[];
 }
 
 /**
@@ -56,7 +62,13 @@ function getNestedValue(obj: unknown, path: string): unknown {
 }
 
 function DynamicTableInner<T extends Record<string, unknown>>(
-  { url, columns, limit = 25, responseKey }: DynamicTableProps<T>,
+  {
+    url,
+    columns,
+    limit = 25,
+    responseKey = "records",
+    actionButton,
+  }: DynamicTableProps<T>,
   ref: React.Ref<DynamicTableRef>
 ) {
   const [data, setData] = useState<T[]>([]);
@@ -94,13 +106,10 @@ function DynamicTableInner<T extends Record<string, unknown>>(
           setData([]);
           return;
         }
-        
-        const dataObj = response.data as ApiResponseData<T> | undefined;
-        const key = responseKey ?? (dataObj ? Object.keys(dataObj).find(k => Array.isArray(dataObj[k])) : undefined);
-        const rows =
-          dataObj && key && Array.isArray(dataObj[key])
-            ? dataObj[key] as T[]
-            : [];
+
+        const rows = Array.isArray(response.data?.[responseKey])
+          ? response.data?.[responseKey]
+          : [];
 
         const totalPages =
           response.data && typeof response.data.total_pages === "number"
@@ -145,7 +154,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
   };
 
   const handleSearch = (query: string) => {
-    if (query === "") return;
+    // if (query === "") return;
     setCurrentPage(1);
     setSearchQuery(query);
   };
@@ -160,7 +169,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
       setSortOrder("asc");
     }
     setCurrentPage(1);
-    fetchData(1, true)
+    fetchData(1, true);
   };
 
   return (
@@ -176,6 +185,12 @@ function DynamicTableInner<T extends Record<string, unknown>>(
               onSearch={handleSearch}
               placeholder="Search files..."
             />
+            {actionButton &&
+              actionButton?.map((btn, idx) => (
+                <Button key={idx} onClick={btn.onClick} className="flex items-center gap-2">
+                  <UserRoundPlus className="size-4" /> <span>{btn.label}</span>
+                </Button>
+              ))}
           </div>
 
           <table className="min-w-full border border-gray-200 bg-white shadow-md rounded-lg">

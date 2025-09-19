@@ -13,6 +13,7 @@ export interface TooltipProps {
   hideDelay?: number;
   className?: string;
   maxWidth?: string;
+  disabled?: boolean;
 }
 
 export default function Tooltip({
@@ -24,6 +25,7 @@ export default function Tooltip({
   hideDelay = 50,
   className,
   maxWidth = "max-w-xs",
+  disabled = false,
 }: TooltipProps) {
   const [visible, setVisible] = useState(false);
   const [actualPlacement, setActualPlacement] = useState<Placement>(placement);
@@ -178,7 +180,11 @@ export default function Tooltip({
     tabIndex: children.props.tabIndex ?? 0,
   });
 
-  return (
+  if (disabled){
+    return child;
+  }
+
+  return (    
     <span {...wrapperProps}>
       {child}
       <span

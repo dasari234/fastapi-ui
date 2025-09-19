@@ -89,7 +89,7 @@ export default function Modal({
                 {title}
               </h2>
             )}
-            <div>{children}</div>
+            <div className="w-full">{children}</div>
           </motion.div>
         </motion.div>
       )}

@@ -1,9 +1,9 @@
 // Select.tsx
-import { useState, useEffect, useRef } from "react";
 import { Check, ChevronDown, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { getFieldError, getLabelClasses, isFieldInvalid, validateField } from "../../../../lib/use-form/form-utils";
+import type { Path, UseFormReturnType } from "../../../../lib/use-form/types";
 import { cn } from "../../../../lib/utils";
-import type { UseFormReturnType, Path } from "../../../../lib/use-form/types";
-import { getFieldError, isFieldInvalid, getLabelClasses, validateField } from "../../../../lib/use-form/form-utils";
 
 export interface FieldOption {
   label: string;
@@ -48,7 +48,7 @@ export function Select<T extends object>({
 
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selected, setSelected] = useState<string | number>(value);
+  const [selected, setSelected] = useState<string | number>(value as string | number);
   const [position, setPosition] = useState<"above" | "below">("below");
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -60,7 +60,7 @@ export function Select<T extends object>({
     : options;
 
   useEffect(() => {
-    setSelected(value);
+    setSelected(value as string | number);
   }, [value]);
 
   useEffect(() => {

@@ -4,7 +4,6 @@ import { ToastContainer } from "react-toastify";
 import { AuthProvider } from "./context/AuthProvider";
 import "./index.css";
 import { routes } from "./routes";
-
 import PageLoadingSpinner from "./components/loading-spinner/LoadingSpinner";
 
 const AppRoutes = () => {
@@ -22,10 +21,10 @@ function App() {
 
   return (
     <BrowserRouter>
-      <ToastContainer position="top-right" autoClose={1500} />
+      <ToastContainer position="top-right" autoClose={2000} />
       <AuthProvider>
-        <Suspense fallback={<PageLoadingSpinner />}>
-          <AppRoutes />
+      <Suspense fallback={<PageLoadingSpinner />}>
+        <AppRoutes />
         </Suspense>
       </AuthProvider>
     </BrowserRouter>

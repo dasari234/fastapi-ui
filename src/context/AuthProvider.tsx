@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import AuthService from "../services/auth";
-import UserService from "../services/user";
 import { UserContext } from "./AuthContext";
 
 import {
@@ -11,6 +10,7 @@ import {
   removeLocalStorage,
   setLocalStorage,
 } from "../lib/utils";
+import UserService from "../services/userService";
 import type { Login, UserResponse } from "../types";
 
 type Session = {
@@ -194,6 +194,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     refreshTimeoutRef.current = setTimeout(refreshFn, Math.max(timeout, 0));
   };
 
+
+  const fetchUser = async () => {
+    try {
+      const res = await UserService.getUser() as { success?: boolean; message?: string; data?: UserResponse };
+
+      if (!res?.success || !res?.data) {
+        handleLogout();
+        return;
+      }
+
+      setUser(res.data);
+      setLocalStorage("user", JSON.stringify(res.data));
+    } catch (error) {
+      console.error("Failed to fetch user:", error);
+      handleLogout();
+    }
+  };
+
   useEffect(() => {
     const session = getLocalStorage<Session>(localStorageKeys.session);
     if (!session) {
@@ -210,16 +228,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       setUser(storedUser);
     } else {
       // Or re-fetch if not stored
-      UserService.getUser()
-        .then((res) => {
-          if (res?.success) {
-            setUser(res.data);
-            setLocalStorage("user", JSON.stringify(res.data));
-          } else {
-            handleLogout();
-          }
-        })
-        .catch(() => handleLogout());
+      fetchUser();
     }
 
     // Schedule refresh

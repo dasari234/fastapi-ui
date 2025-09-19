@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpMethod } from "../../types";
 import UseApi from "../use-api";
 
@@ -9,9 +10,7 @@ class AuthService {
     });
   }
 
-  public async refreshToken(
-    refresh_token: Record<string, string>
-  ): Promise<undefined> {
+  public async refreshToken(refresh_token: Record<string, string>): Promise<undefined> {
     return UseApi.request(HttpMethod.POST, "/auth/refresh", {
       data: refresh_token,
       headers: {
@@ -20,6 +19,7 @@ class AuthService {
     });
   }
 
+  
   public async logout(): Promise<undefined> {
     return UseApi.request(HttpMethod.POST, "/auth/logout", {
       data: {},

@@ -84,6 +84,7 @@ export function Dropdown({ text, items, className }: DropdownProps) {
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.3 }}
           >
+            
             <ul className="py-2">
               {items.map(
                 ({ label, onClick, icon, iconPosition = "left" }, index) => (
