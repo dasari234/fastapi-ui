@@ -90,8 +90,8 @@ function DynamicTableInner<T extends Record<string, unknown>>(
       const getSortKey = (key?: string) => key?.split(".").pop();
 
       const urlWithParams = buildUrlWithParams(url, {
-        limit: limit,
-        page: page,
+        limit,
+        page,
         search: searchQuery.trim() || undefined,
         sort_by: getSortKey(sortBy) || undefined,
         sort_order: sortBy ? sortOrder : undefined,
@@ -131,7 +131,13 @@ function DynamicTableInner<T extends Record<string, unknown>>(
   useEffect(() => {
     fetchData(currentPage, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, currentPage, url]);
+  }, [currentPage, searchQuery, sortBy, sortOrder, url]);
+
+  const onPageChange = (page: number) => {
+    if (page !== currentPage) {
+      setCurrentPage(page);
+    }
+  };
 
   useImperativeHandle(ref, () => ({
     refresh: () => fetchData(currentPage, true),
@@ -146,17 +152,11 @@ function DynamicTableInner<T extends Record<string, unknown>>(
     }));
   }, [columns, data]);
 
-  const onPageChange = (page: number) => {
-    if (page !== currentPage) {
-      setCurrentPage(page);
-      fetchData(page, true);
-    }
-  };
-
   const handleSearch = (query: string) => {
-    // if (query === "") return;
-    setCurrentPage(1);
-    setSearchQuery(query);
+    if (query !== searchQuery) {
+      setSearchQuery(query);
+      setCurrentPage(1);
+    }
   };
 
   //toggle sort
@@ -169,7 +169,6 @@ function DynamicTableInner<T extends Record<string, unknown>>(
       setSortOrder("asc");
     }
     setCurrentPage(1);
-    fetchData(1, true);
   };
 
   return (
@@ -187,7 +186,11 @@ function DynamicTableInner<T extends Record<string, unknown>>(
             />
             {actionButton &&
               actionButton?.map((btn, idx) => (
-                <Button key={idx} onClick={btn.onClick} className="flex items-center gap-2">
+                <Button
+                  key={idx}
+                  onClick={btn.onClick}
+                  className="flex items-center gap-2"
+                >
                   <UserRoundPlus className="size-4" /> <span>{btn.label}</span>
                 </Button>
               ))}

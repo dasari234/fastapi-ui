@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "../../../lib/utils";
+import { Button } from "../Button";
 
 interface ModalProps {
   open: boolean;
@@ -76,13 +77,15 @@ export default function Modal({
             aria-modal="true"
           >
             {showCloseButton && (
-              <button
+              <Button
                 onClick={onClose}
                 className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 focus:outline-none rounded-full hover:bg-gray-200 p-1"
                 aria-label="Close"
+                variant="ghost"
+                size="icon"
               >
                 <X className="w-4 h-4" />
-              </button>
+              </Button>
             )}
             {title && (
               <h2 className="text-lg font-semibold mb-4 text-gray-900">

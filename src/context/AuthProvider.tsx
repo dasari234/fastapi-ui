@@ -162,19 +162,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         refresh_token: session.refresh_token,
       })) as
         | {
-            access_token: string;
-            refresh_token: string;
+            data: {
+              access_token: string;
+              refresh_token: string;
+            };
           }
         | null
         | undefined;
 
-      if (!resp?.access_token || !resp?.refresh_token) {
+      if (!resp?.data.access_token || !resp?.data.refresh_token) {
         throw new Error("Invalid refresh response");
       }
 
       const newSession: Session = {
-        access_token: resp.access_token,
-        refresh_token: resp.refresh_token,
+        access_token: resp?.data.access_token,
+        refresh_token: resp?.data.refresh_token,
         expiresAt: Date.now() + 60 * 60 * 1000,
       };
       saveSession(newSession);
@@ -190,14 +192,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     if (refreshTimeoutRef.current) {
       clearTimeout(refreshTimeoutRef.current);
     }
-    const timeout = expiresAt - Date.now() - 60 * 1000; // refresh 1 min early
+    const timeout = expiresAt - Date.now() - 5 * 60 * 1000; // refresh 5 min early
     refreshTimeoutRef.current = setTimeout(refreshFn, Math.max(timeout, 0));
   };
 
-
   const fetchUser = async () => {
     try {
-      const res = await UserService.getUser() as { success?: boolean; message?: string; data?: UserResponse };
+      const res = (await UserService.getUser()) as {
+        success?: boolean;
+        message?: string;
+        data?: UserResponse;
+      };
 
       if (!res?.success || !res?.data) {
         handleLogout();

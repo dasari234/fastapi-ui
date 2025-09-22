@@ -1,12 +1,13 @@
 import { CircleUser, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../hooks";
-import { getInitials, getLocalStorage } from "../lib/utils";
+import { getInitials } from "../lib/utils";
+import UserService from "../services/user";
 import { Dropdown } from "./ui/dropdown/Dropdown";
 
 export default function Header() {
-  const { logout, isAuthenticated } = useAuthContext();
+  const { logout, isAuthenticated, user } = useAuthContext();
   const [isLoading, setIsLoading] = useState(true);
   const [username, setUsername] = useState("");
   const [userRole, setUserRole] = useState("");
@@ -15,7 +16,7 @@ export default function Header() {
 
   useEffect(() => {
     setTimeout(() => {
-      const storedUser = getLocalStorage("user") as {
+      const storedUser = user as {
         first_name?: string;
         last_name?: string;
         role?: string;
@@ -34,6 +35,7 @@ export default function Header() {
       setUserRole(userFullname);
       setIsLoading(false);
     }, 200);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const dropdownItems = [
@@ -66,7 +68,7 @@ export default function Header() {
   return (
     <header className="w-full bg-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-blue-500">Sentinel Demo</h1>
+        <h1 className="text-xl font-bold text-blue-500"><Link to={UserService.isAdmin() ? "/admin" : "/"}>Sentinel Demo</Link></h1>
         {/* <Navbar />        */}
         {!isLoading && isAuthenticated &&(
           <div className="flex justify-center items-center">

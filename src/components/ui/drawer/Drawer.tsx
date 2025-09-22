@@ -1,9 +1,12 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef } from "react";
-import { cn } from "../../../lib/helpers";
+import { createPortal } from "react-dom";
+import { cn } from "../../../lib/utils";
+import { Button } from "../Button";
+
+
 
 
 interface DrawerProps {
@@ -90,13 +93,15 @@ export default function Drawer({
             )}
           >
             {showCloseButton && (
-              <button
+              <Button
                 onClick={onClose}
                 className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
                 aria-label="Close drawer"
+                variant="ghost"
+                size="icon"
               >
                 ×
-              </button>
+              </Button>
             )}
             {title && <h2 className="text-lg font-semibold mb-4">{title}</h2>}
             <div>{children}</div>
