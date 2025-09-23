@@ -1,11 +1,12 @@
-import { cn } from "../../../../lib/utils";
-import type { CheckboxProps } from "../../../../lib/use-form/types";
+import { Check, Minus } from "lucide-react";
+import { useEffect, useRef } from "react";
 import {
   getFieldError,
-  isFieldInvalid,
   getLabelClasses,
+  isFieldInvalid,
 } from "../../../../lib/use-form/form-utils";
-import { Check } from "lucide-react";
+import type { CheckboxProps } from "../../../../lib/use-form/types";
+import { cn } from "../../../../lib/utils";
 
 export function Checkbox<T extends object>({
   label,
@@ -16,15 +17,34 @@ export function Checkbox<T extends object>({
   disabled = false,
   size = "md",
   containerClassName,
+  // Non-form props
+  checked: externalChecked,
+  indeterminate = false,
+  onChange: externalOnChange,
   ...htmlAttributes
 }: CheckboxProps<T> &
   Omit<React.InputHTMLAttributes<HTMLInputElement>, "name" | "size">) {
-  const { checked, onChange, onBlur } = form.getInputProps(name, {
+  const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Determine if we're in form mode or non-form mode
+  const isFormMode = !!form && !!name;
+  
+  // Form mode values
+  const formProps = isFormMode ? form.getInputProps(name, {
     type: "checkbox",
-  });
-  const error = getFieldError(form, name as string);
-  const isInvalid = isFieldInvalid(form, name as string);
-  const isTouched = form.touched[name as string];
+  }) : null;
+  
+  const checked = isFormMode ? formProps!.checked : externalChecked;
+  const error = isFormMode ? getFieldError(form, name as string) : null;
+  const isInvalid = isFormMode ? isFieldInvalid(form, name as string) : false;
+  const isTouched = isFormMode ? form.touched[name as string] : false;
+
+  // Set native indeterminate property
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.indeterminate = indeterminate;
+    }
+  }, [indeterminate]);
 
   const sizeClasses = {
     sm: "w-4 h-4",
@@ -32,11 +52,31 @@ export function Checkbox<T extends object>({
     lg: "w-6 h-6",
   };
 
-  const handleBlur = () => {
-    onBlur?.();
-    if (isTouched && isInvalid) {
-      // Validate on blur if needed
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (isFormMode) {
+      formProps!.onChange(event);
+    } else {
+      externalOnChange?.(event);
     }
+  };
+
+  const handleBlur = () => {
+    if (isFormMode) {
+      formProps!.onBlur?.();
+      if (isTouched && isInvalid) {
+        // Validate on blur if needed
+      }
+    }
+  };
+
+  // Determine background color based on state
+  const getBackgroundColor = () => {
+    if (disabled) return "bg-gray-100 border-gray-300";
+    
+    if (indeterminate) return "bg-blue-600 border-blue-600";
+    if (checked) return "bg-blue-600 border-blue-600";
+    
+    return "bg-white border-gray-300";
   };
 
   return (
@@ -53,25 +93,23 @@ export function Checkbox<T extends object>({
             "relative flex items-center justify-center border rounded transition-all duration-200",
             sizeClasses[size],
             "shadow-sm focus-within:ring-2 focus-within:ring-offset-1",
-            checked
-              ? "bg-blue-600 border-blue-600"
-              : "bg-white border-gray-300",
+            getBackgroundColor(),
             isInvalid && "border-red-500",
-            disabled && "bg-gray-100 border-gray-300",
             !disabled &&
               cn(
                 "group-hover:border-blue-400",
-                checked && "group-hover:bg-blue-700 group-hover:border-blue-700"
+                (checked || indeterminate) && "group-hover:bg-blue-700 group-hover:border-blue-700"
               )
           )}
         >
           <input
             {...htmlAttributes}
+            ref={inputRef}
             id={name as string}
             name={name as string}
             type="checkbox"
-            checked={checked}
-            onChange={onChange}
+            checked={checked || false}
+            onChange={handleChange}
             onBlur={handleBlur}
             disabled={disabled}
             className={cn(
@@ -80,19 +118,26 @@ export function Checkbox<T extends object>({
             )}
           />
 
-          {checked && (
-            <Check
+          {/* Icon display - indeterminate takes priority */}
+          {indeterminate ? (
+            <Minus
               className={cn(
                 "text-white transition-all duration-200",
-                size === "sm"
-                  ? "w-3 h-3"
-                  : size === "md"
-                  ? "w-4 h-4"
-                  : "w-5 h-5"
+                size === "sm" ? "w-3 h-3" :
+                size === "md" ? "w-4 h-4" : "w-5 h-5"
               )}
               strokeWidth={3}
             />
-          )}
+          ) : checked ? (
+            <Check
+              className={cn(
+                "text-white transition-all duration-200",
+                size === "sm" ? "w-3 h-3" :
+                size === "md" ? "w-4 h-4" : "w-5 h-5"
+              )}
+              strokeWidth={3}
+            />
+          ) : null}
         </div>
 
         {/* Label and description */}
@@ -100,8 +145,9 @@ export function Checkbox<T extends object>({
           {label && (
             <span
               className={cn(
-                getLabelClasses(disabled),
-                "block font-medium text-gray-900"
+                isFormMode ? getLabelClasses(disabled) : "",
+                "block font-medium text-gray-900",
+                disabled && "text-gray-400"
               )}
             >
               {label}

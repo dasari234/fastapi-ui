@@ -21,6 +21,17 @@ interface DeleteApiResponse {
     deleted_user_id: number;
   };
 }
+interface UserRow {
+  created_at: string;
+  email: string;
+  first_name: string;
+  id: number;
+  is_active: boolean;
+  last_name: string;
+  role: "admin" | "user";
+  updated_at: string;
+  last_login?: string;
+}
 
 function UserManagement() {
   const { user } = useAuthContext();
@@ -51,7 +62,7 @@ function UserManagement() {
       label: "Email",
       name: "email",
       type: "email",
-      disabled: false,
+      disabled: formType === "add" ? false : true,
       rules: { required: "Email is required", pattern: /^\S+@\S+$/i },
     },
     {
@@ -121,7 +132,6 @@ function UserManagement() {
           return;
         }
         if (response.success) {
-          setIsModalOpen(false);
           toast.success(response?.message || "User created successfully");
         }
       } else if (formType === "edit") {
@@ -140,8 +150,6 @@ function UserManagement() {
           selectedUser?.id,
           stringValues
         )) as { success?: boolean; message?: string; data?: UserResponse };
-
-        setIsModalOpen(false);
         toast.success(response?.message || "User updated successfully");
       }
 
@@ -149,30 +157,36 @@ function UserManagement() {
     } catch {
       toast.error(`Failed to ${formType} user`);
       setIsModalOpen(false);
+    } finally {
+      setIsModalOpen(false);
+      setIsLoading(false);
     }
   };
 
   const handleDeleteUser = async () => {
     if (!selectedUser?.id) return;
     try {
+      setIsLoading(true);
       const response = (await UserService.deleteUser(
         selectedUser.id
       )) as unknown as DeleteApiResponse;
-
-      setDeleteModal(false);
       if (response && typeof response === "object" && "success" in response) {
         if (!response.success) {
           toast.error(
             (response && response.message) || "Failed to Delete User"
           );
         } else {
-          toast.success("User Deleted");
+          toast.success("User deleted successfully");
         }
 
         tableRef.current?.refresh();
       }
     } catch {
       toast.error("Failed to Delete user");
+      setDeleteModal(false);
+    } finally {
+      setIsLoading(false);
+      setDeleteModal(false);
     }
   };
 
@@ -180,9 +194,58 @@ function UserManagement() {
     document.title = "User Management";
   }, []);
 
+  const columns = [
+    { key: "first_name", label: "First Name" },
+    { key: "last_name", label: "Last Name" },
+    { key: "email", label: "Email" },
+    { key: "role", label: "Role" },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (row: UserRow) => (
+        <div className="flex gap-4">
+          <Tooltip content="Edit" maxWidth="max-w-xl">
+            <Button
+              className="text-red-500 hover:text-red-700"
+              onClick={() => handleEdit(row)}
+              variant="ghost"
+            >
+              <SquarePen className="size-3.5" color="var(--color-blue-600)" />
+            </Button>
+          </Tooltip>
+
+          <Tooltip
+            content="Delete"
+            maxWidth="max-w-xl"
+            disabled={row.id === user?.id}
+          >
+            <Button
+              className="text-red-500 hover:text-red-700"
+              onClick={() => handleDelete(row)}
+              disabled={row.id === user?.id}
+              variant="ghost"
+            >
+              <Trash2 className="size-3.5" />
+            </Button>
+          </Tooltip>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <>
       <h1>User's List</h1>
+
+      <DynamicTable<UserRow>
+        url="/users"
+        ref={tableRef}
+        actionButton={[{ label: "Add User", onClick: handleAddClick }]}
+        columns={columns}
+        responseKey="users"
+        onSelectionChange={(selectedRows) => console.log(selectedRows)}
+      />
+
       {isModalOpen && (
         <Modal
           title={formType === "add" ? "Add User" : "Edit User"}
@@ -205,72 +268,26 @@ function UserManagement() {
         </Modal>
       )}
 
-      <DynamicTable<UserResponse>
-        url="/users"
-        ref={tableRef}
-        actionButton={[{ label: "Add User", onClick: handleAddClick }]}
-        columns={[
-          { key: "first_name", label: "First Name" },
-          { key: "last_name", label: "Last Name" },
-          { key: "email", label: "Email" },
-          { key: "role", label: "Role" },
-          {
-            key: "actions",
-            label: "Actions",
-            render: (row) => (
-              <div className="flex gap-4">
-                <Tooltip content="edit" maxWidth="max-w-xl">
-                  <Button
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => handleEdit(row)}
-                    variant="ghost"
-                  >
-                    <SquarePen
-                      className="size-3.5"
-                      color="var(--color-blue-600)"
-                    />
-                  </Button>
-                </Tooltip>
-
-                <Tooltip
-                  content="Delete"
-                  maxWidth="max-w-xl"
-                  disabled={row.id === user?.id}
-                >
-                  <Button
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => handleDelete(row)}
-                    disabled={row.id === user?.id}
-                    variant="ghost"
-                  >
-                    <Trash2 className="size-3.5" />
-                  </Button>
-                </Tooltip>
-              </div>
-            ),
-          },
-        ]}
-        responseKey="users"
-      />
-
       <Modal
         open={deleteModal}
         onClose={() => setDeleteModal(false)}
         title="Delete User"
         showCloseButton={true}
       >
-        <div className="max-h-[80vh] overflow-auto pr-4">
+        <div className="max-h-[80vh] overflow-auto p-2">
           <h1>
-            Are you sure, you want to delete <b>{selectedUser?.first_name}</b> ?
+            Are you sure, you want to delete <b>{selectedUser?.first_name}</b>?
           </h1>
           <div className="flex justify-end gap-4 mt-5">
-            <Button variant="outline" onClick={() => setDeleteModal(false)}>
+            <Button variant="outline" disabled={isLoading} onClick={() => setDeleteModal(false)}>
               Cancel
             </Button>
             <Button
               type="button"
               variant="destructive"
               onClick={handleDeleteUser}
+              disabled={isLoading}
+              loading={isLoading}
             >
               Yes, Delete
             </Button>

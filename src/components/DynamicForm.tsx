@@ -102,7 +102,7 @@ export function DynamicForm<T extends object>({
         }
         return null;
       })}
-      <Button type="submit" loading={isLoading} className="w-full h-10">
+      <Button type="submit" loading={isLoading} disabled={isLoading} className="w-full h-10">
         {buttonLabel}
       </Button>
     </form>

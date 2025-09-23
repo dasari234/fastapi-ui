@@ -15,7 +15,7 @@ export interface UserRoot {
     is_active: boolean;
     created_at: string;
     updated_at: string;
-    last_login: string;
+    last_login?: string;
   }
   
 

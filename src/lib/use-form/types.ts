@@ -10,7 +10,10 @@ export type Path<T> = T extends object
     }[keyof T]
   : never;
 
-export type PathValue<T, P extends Path<T>> = P extends `${infer K}.${infer Rest}`
+export type PathValue<
+  T,
+  P extends Path<T>
+> = P extends `${infer K}.${infer Rest}`
   ? K extends keyof T
     ? Rest extends Path<T[K]>
       ? PathValue<T[K], Rest>
@@ -37,7 +40,10 @@ export type ValidationRule<T = unknown> = {
   minLength?: number | string;
   maxLength?: number | string;
   pattern?: RegExp | string;
-  validate?: (value: unknown, values: T) => boolean | string | Promise<boolean | string>;
+  validate?: (
+    value: unknown,
+    values: T
+  ) => boolean | string | Promise<boolean | string>;
   equals?: unknown | string;
 };
 
@@ -47,7 +53,11 @@ export type FormRules<T> = {
 
 export interface FormOptions<T extends object> {
   initialValues: T;
-  validate?: (values: T) => Partial<Record<string, string>> | Promise<Partial<Record<string, string>>>;
+  validate?: (
+    values: T
+  ) =>
+    | Partial<Record<string, string>>
+    | Promise<Partial<Record<string, string>>>;
   rules?: FormRules<T>;
   validateInputOnBlur?: boolean;
   validateInputOnChange?: boolean;
@@ -75,25 +85,27 @@ export interface UseFormReturnType<T extends object> {
   isSubmitting: boolean;
   isValidating: boolean;
   hasSubmitted: boolean;
-  
+
   // Methods
   setValues: (values: Partial<T>) => void;
   setFieldValue: <P extends Path<T>>(field: P, value: PathValue<T, P>) => void;
   setFieldError: (field: string, error: string) => void;
   setFieldTouched: (field: string, touched: boolean) => void;
   setFieldDirty: (field: string, dirty: boolean) => void;
-  
+
   // Validation
   validate: () => Promise<boolean>;
   validateField: (field: string) => Promise<void>;
   clearErrors: () => void;
   reset: () => void;
-  
+
   // Form handling
-  onSubmit: (handler: (values: T) => void | Promise<void>) => (e?: React.FormEvent) => Promise<void>;
+  onSubmit: (
+    handler: (values: T) => void | Promise<void>
+  ) => (e?: React.FormEvent) => Promise<void>;
   getInputProps: <P extends Path<T>>(
     field: P,
-    options?: { type?: 'checkbox' | 'radio' | 'input' | 'select' | 'textarea' }
+    options?: { type?: "checkbox" | "radio" | "input" | "select" | "textarea" }
   ) => {
     name: string;
     value: unknown;
@@ -101,19 +113,30 @@ export interface UseFormReturnType<T extends object> {
     onChange: (e: React.ChangeEvent<unknown> | unknown) => void;
     onBlur: () => void;
   };
-  
+
   // Utilities
   getFieldError: (field: string) => string | undefined;
   isDirty: (field?: string) => boolean;
   isTouched: (field?: string) => boolean;
   isValid: () => boolean;
-  
+
   // Array operations
-  insertListItem: <P extends Path<T>>(field: P, item: PathValue<T, P> extends Array<infer U> ? U : never) => void;
+  insertListItem: <P extends Path<T>>(
+    field: P,
+    item: PathValue<T, P> extends Array<infer U> ? U : never
+  ) => void;
   removeListItem: <P extends Path<T>>(field: P, index: number) => void;
-  reorderListItem: <P extends Path<T>>(field: P, from: number, to: number) => void;
-  swapListItem: <P extends Path<T>>(field: P, indexA: number, indexB: number) => void;
-  
+  reorderListItem: <P extends Path<T>>(
+    field: P,
+    from: number,
+    to: number
+  ) => void;
+  swapListItem: <P extends Path<T>>(
+    field: P,
+    indexA: number,
+    indexB: number
+  ) => void;
+
   // Enhanced methods
   resetDirty: (values?: T) => void;
   resetTouched: () => void;
@@ -122,8 +145,8 @@ export interface UseFormReturnType<T extends object> {
 
 export interface BaseFieldProps<T extends object> {
   label?: string;
-  name: Path<T>;
-  form: UseFormReturnType<T>;
+  name?: Path<T>;
+  form?: UseFormReturnType<T>;
   withAsterisk?: boolean;
   disabled?: boolean;
   className?: string;
@@ -150,8 +173,14 @@ export interface TextareaProps<T extends object> extends InputFieldProps<T> {
 }
 
 export interface CheckboxProps<T extends object> extends BaseFieldProps<T> {
+  label?: string;
   description?: string;
   containerClassName?: string;
   size?: "sm" | "md" | "lg";
   className?: string;
+  indeterminate?: boolean;
+  checked?: boolean;
+  onChange: () => void;
 }
+
+

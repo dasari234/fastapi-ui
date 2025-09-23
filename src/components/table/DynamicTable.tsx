@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import { buildUrlWithParams } from "../../lib/utils";
 import { UtilService } from "../../services/util-service";
 import { Button } from "../ui/Button";
+import { Checkbox } from "../ui/form/checkbox/Checkbox";
 import { LoadingOverlay } from "../ui/loading-overlay/LoadingOverlay";
 import Pagination from "../ui/pagination/Pagination";
 import SearchInput from "../ui/search/SearchInput";
@@ -38,6 +39,8 @@ interface ApiResponse<T> {
 
 export interface DynamicTableRef {
   refresh: () => void;
+  getSelectedRows: () => void;
+  clearSelection: () => void;
 }
 
 interface DynamicTableProps<T> {
@@ -46,6 +49,9 @@ interface DynamicTableProps<T> {
   limit?: number;
   responseKey?: string | undefined;
   actionButton?: ActionButton[];
+  selectable?: boolean;
+  onSelectionChange?: (selectedRows: T[]) => void;
+  rowIdentifier?: keyof T;
 }
 
 /**
@@ -54,7 +60,6 @@ interface DynamicTableProps<T> {
 function getNestedValue(obj: unknown, path: string): unknown {
   return path.split(".").reduce((acc, part) => {
     if (acc && typeof acc === "object" && acc !== null && part in acc) {
-      // TypeScript needs a type assertion here
       return (acc as Record<string, unknown>)[part];
     }
     return undefined;
@@ -68,10 +73,16 @@ function DynamicTableInner<T extends Record<string, unknown>>(
     limit = 25,
     responseKey = "records",
     actionButton,
+    selectable = false,
+    onSelectionChange,
+    rowIdentifier = "id" as keyof T,
   }: DynamicTableProps<T>,
   ref: React.Ref<DynamicTableRef>
 ) {
   const [data, setData] = useState<T[]>([]);
+  const [selectedRows, setSelectedRows] = useState<Set<string | number>>(
+    new Set()
+  );
   const [loading, setLoading] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -133,6 +144,16 @@ function DynamicTableInner<T extends Record<string, unknown>>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, searchQuery, sortBy, sortOrder, url]);
 
+  // Notify parent when selection changes
+  useEffect(() => {
+    if (onSelectionChange) {
+      const selectedData = data.filter((row) =>
+        selectedRows.has(row[rowIdentifier] as string | number)
+      );
+      onSelectionChange(selectedData);
+    }
+  }, [selectedRows, data, onSelectionChange, rowIdentifier]);
+
   const onPageChange = (page: number) => {
     if (page !== currentPage) {
       setCurrentPage(page);
@@ -141,6 +162,14 @@ function DynamicTableInner<T extends Record<string, unknown>>(
 
   useImperativeHandle(ref, () => ({
     refresh: () => fetchData(currentPage, true),
+    getSelectedRows: () => {
+      return data.filter((row) =>
+        selectedRows.has(row[rowIdentifier] as string | number)
+      );
+    },
+    clearSelection: () => {
+      setSelectedRows(new Set());
+    },
   }));
 
   const headers = useMemo<Column<T>[]>(() => {
@@ -159,7 +188,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
     }
   };
 
-  //toggle sort
+  // Toggle sort
   const handleSort = (key: string, sortable?: boolean) => {
     if (!sortable) return;
     if (sortBy === key) {
@@ -169,6 +198,35 @@ function DynamicTableInner<T extends Record<string, unknown>>(
       setSortOrder("asc");
     }
     setCurrentPage(1);
+  };
+
+  const toggleRow = (rowId: string | number) => {
+    setSelectedRows((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(rowId)) {
+        newSet.delete(rowId);
+      } else {
+        newSet.add(rowId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedRows.size === data.length) {
+      setSelectedRows(new Set());
+    } else {
+      const allIds = data.map((row) => row[rowIdentifier] as string | number);
+      setSelectedRows(new Set(allIds));
+    }
+  };
+
+  const isAllSelected = selectedRows.size === data.length && data.length > 0;
+  const isIndeterminate =
+    selectedRows.size > 0 && selectedRows.size < data.length;
+
+  const getRowId = (row: T): string | number => {
+    return row[rowIdentifier] as string | number;
   };
 
   return (
@@ -190,6 +248,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
                   key={idx}
                   onClick={btn.onClick}
                   className="flex items-center gap-2"
+                  disabled={btn.onClick.length > 0 && selectedRows.size === 0}
                 >
                   <UserRoundPlus className="size-4" /> <span>{btn.label}</span>
                 </Button>
@@ -199,6 +258,16 @@ function DynamicTableInner<T extends Record<string, unknown>>(
           <table className="min-w-full border border-gray-200 bg-white shadow-md rounded-lg">
             <thead>
               <tr className="bg-gray-100 text-left">
+                {selectable && (
+                  <th className="px-4 py-2 border-b">
+                    <Checkbox
+                      checked={isAllSelected}
+                      indeterminate={isIndeterminate}
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
+                )}
+
                 {headers.map((col) => {
                   const isActive = sortBy === col.key;
                   return (
@@ -229,38 +298,51 @@ function DynamicTableInner<T extends Record<string, unknown>>(
 
             <tbody>
               {data.length > 0
-                ? data.map((row, idx) => (
-                    <tr
-                      key={idx}
-                      className="hover:bg-gray-50 transition-colors duration-150"
-                    >
-                      {headers.map((col) => {
-                        let value: React.ReactNode;
-                        if (col.render) {
-                          value = col.render(row);
-                        } else {
-                          const nested = getNestedValue(row, String(col.key));
-                          value =
-                            nested !== undefined && nested !== null
-                              ? String(nested)
-                              : "";
-                        }
-
-                        return (
-                          <td
-                            key={String(col.key)}
-                            className="px-4 py-2 text-sm text-gray-700 border-b"
-                          >
-                            {value !== undefined && value !== null ? value : ""}
+                ? data.map((row) => {
+                    const rowId = getRowId(row);
+                    return (
+                      <tr
+                        key={rowId}
+                        className="hover:bg-gray-50 transition-colors duration-150"
+                      >
+                        {selectable && (
+                          <td className="px-4 py-2 border-b">
+                            <Checkbox
+                              checked={selectedRows.has(rowId)}
+                              onChange={() => toggleRow(rowId)}
+                            />
                           </td>
-                        );
-                      })}
-                    </tr>
-                  ))
+                        )}
+                        {headers.map((col) => {
+                          let value: React.ReactNode;
+                          if (col.render) {
+                            value = col.render(row);
+                          } else {
+                            const nested = getNestedValue(row, String(col.key));
+                            value =
+                              nested !== undefined && nested !== null
+                                ? String(nested)
+                                : "";
+                          }
+
+                          return (
+                            <td
+                              key={String(col.key)}
+                              className="px-4 py-2 text-sm text-gray-700 border-b"
+                            >
+                              {value !== undefined && value !== null
+                                ? value
+                                : ""}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })
                 : !loading && (
                     <tr>
                       <td
-                        colSpan={headers.length}
+                        colSpan={headers.length + (selectable ? 1 : 0)}
                         className="py-4 text-center text-md text-gray-600"
                       >
                         No records found.
@@ -275,6 +357,14 @@ function DynamicTableInner<T extends Record<string, unknown>>(
             currentPage={currentPage}
             onPageChange={onPageChange}
           />
+
+          {/* Selection info */}
+          {selectable && selectedRows.size > 0 && (
+            <div className="mt-2 text-sm text-gray-600">
+              {selectedRows.size} row{selectedRows.size !== 1 ? "s" : ""}{" "}
+              selected
+            </div>
+          )}
         </>
       )}
     </div>
