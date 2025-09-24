@@ -1,15 +1,73 @@
 import { XCircle } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import { DynamicForm, type Field } from "../../../components/DynamicForm";
+import type { UseFormReturnType } from "../../../lib/use-form/types";
+import AuthService from "../../../services/auth";
+import type { UserResponse } from "../../../types";
+
+type ResetPasswordForm = {
+  password: string;
+  confirm_password: string;
+};
 
 const RestPassword = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get("token");
 
-  // {
-  //           token,
-  //           new_password: formData.password
-  //         }
+  const passwordFields: Field[] = [
+    {
+      label: "New Password",
+      name: "password",
+      type: "password",
+      disabled: false,
+      rules: {
+        required: "Password is required",
+        minLength: 8,
+        pattern: /[A-Z]/,
+      },
+    },
+    {
+      label: "Confirm Password",
+      name: "confirm_password",
+      type: "password",
+      disabled: false,
+      rules: {
+        required: "Password is required",
+        minLength: 8,
+        pattern: /[A-Z]/,
+      },
+    },
+  ];
+
+  const handleResetPassword = async (
+    values: Partial<UserResponse>,
+    form: UseFormReturnType<Partial<ResetPasswordForm>>
+  ) => {
+    try {
+      if (form.values.password !== form.values.confirm_password) {
+        toast.error("Passwords do not match");
+        return;
+      }
+      const payload = {
+        new_password: form.values.password,
+        token: token!,
+      };
+      const response = (await AuthService.resetPassword(payload)) as
+        | { success?: boolean; message?: string }
+        | undefined;
+      if (response?.success) {
+        toast.success("Password Reset SuccessFully");
+        navigate("/login");
+      }
+      if (!response?.success) {
+        form.reset();
+      }
+    } catch {
+      toast.error("Failed to Update");
+    }
+  };
 
   if (!token) {
     return (
@@ -37,14 +95,19 @@ const RestPassword = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <div>
+    <div className="min-h-screen flex  justify-center bg-gray-50">
+      <div className="w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           Reset Your Password
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Enter your new password below
         </p>
+        <DynamicForm
+          formFields={passwordFields}
+          buttonLabel="Reset Password"
+          onSubmit={handleResetPassword}
+        />
       </div>
     </div>
   );

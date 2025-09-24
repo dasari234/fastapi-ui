@@ -1,19 +1,19 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import UserService from "../../../services/userService";
+import type { Signup, UserResponse } from "../../../types";
 
 import { DynamicForm, type Field } from "../../../components/DynamicForm";
 import type { UseFormReturnType } from "../../../lib/use-form/types";
-import UserService from "../../../services/userService";
-import type { Signup, UserResponse } from "../../../types";
 
 function UserSignup() {
   const navigate = useNavigate();
 
   const formFields: Field<Signup>[] = [
-    { label: "First Name", name: "first_name", type: "text", disabled: false, rules: { required: "First Name is required", minLength: 3 } },
-    { label: "Last Name", name: "last_name", type: "text", disabled: false, rules: { required: "Last Name is required", minLength: 3 } },
-    { label: "Email", name: "email", type: "email", disabled: false, rules: { required: "Email is required", pattern: /^\S+@\S+$/i } },
-    { label: "Password", name: "password", type: "password", disabled: false, rules: { required: "Password is required", minLength: 8, pattern: /[A-Z]/ } },
+    { label: "First Name", name: "first_name", type: "text", disabled: false,rules: { required: "First Name is required", minLength: 3 } },
+    { label: "Last Name", name: "last_name", type: "text", disabled: false ,rules: { required: "Last Name is required", minLength: 3  }},
+    { label: "Email", name: "email", type: "email", disabled: false ,rules: { required: "Email is required", pattern: /^\S+@\S+$/i }},
+    { label: "Password", name: "password", type: "password", disabled: false ,rules: { required: "Password is required", minLength: 8,pattern: /[A-Z]/,}},
     {
       label: "Role",
       name: "role",

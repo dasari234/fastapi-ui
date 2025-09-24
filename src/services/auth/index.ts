@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { HttpMethod } from "../../types";
 import UseApi from "../use-api";
 
@@ -34,7 +34,7 @@ class AuthService {
     });
   }
 
-  public async resetPassword(payload: Record<string, string>): Promise<undefined> {
+  public async resetPassword(payload: Record<string, string | undefined>): Promise<undefined> {
     return UseApi.request(HttpMethod.POST, "/auth/reset-password", {
       data: {
         payload,

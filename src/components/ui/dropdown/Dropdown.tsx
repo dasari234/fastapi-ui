@@ -17,14 +17,24 @@ type DropdownProps = {
   text?: string;
   items: DropdownItem[];
   className?: string;
+  isOpen?: boolean;
+  onToggle?: (isOpen: boolean) => void;
 };
 
-export function Dropdown({ text, items, className }: DropdownProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function Dropdown({
+  text,
+  items,
+  className,
+  isOpen = false,
+  onToggle,
+}: DropdownProps) {
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const [positionStyle, setPositionStyle] = useState<React.CSSProperties>({});
-  const toggleDropdown = () => setIsOpen((prev) => !prev);
+
+  const toggleDropdown = () => {
+    onToggle?.(!isOpen);
+  };
 
   useEffect(() => {
     if (isOpen && dropdownRef.current && buttonRef.current) {
@@ -51,13 +61,20 @@ export function Dropdown({ text, items, className }: DropdownProps) {
     }
   }, [isOpen]);
 
-  useClickOutside(
+useClickOutside(
     () => {
-      setIsOpen(false);
+      onToggle?.(false);
     },
     undefined,
     [dropdownRef]
   );
+
+const handleItemClick = (itemOnClick: () => void) => {
+    return () => {
+      onToggle?.(false);
+      itemOnClick();
+    };
+  };
 
   return (
     <div className="relative inline-block">
@@ -84,13 +101,12 @@ export function Dropdown({ text, items, className }: DropdownProps) {
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.3 }}
           >
-            
             <ul className="py-2">
               {items.map(
                 ({ label, onClick, icon, iconPosition = "left" }, index) => (
                   <li
                     key={index}
-                    onClick={onClick}
+                    onClick={handleItemClick(onClick)}
                     className="px-4 py-3 text-sm text-slategray hover:bg-gray-100 cursor-pointer flex items-center space-x-2 border-b last:border-b-0"
                   >
                     {icon && iconPosition === "left" && (

@@ -52,6 +52,7 @@ interface DynamicTableProps<T> {
   selectable?: boolean;
   onSelectionChange?: (selectedRows: T[]) => void;
   rowIdentifier?: keyof T;
+  stripeRows?:boolean
 }
 
 /**
@@ -76,6 +77,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
     selectable = false,
     onSelectionChange,
     rowIdentifier = "id" as keyof T,
+    stripeRows=true
   }: DynamicTableProps<T>,
   ref: React.Ref<DynamicTableRef>
 ) {
@@ -229,6 +231,23 @@ function DynamicTableInner<T extends Record<string, unknown>>(
     return row[rowIdentifier] as string | number;
   };
 
+  const getRowClasses = (row: T, index: number) => {
+    const rowId = getRowId(row);
+    const isSelected = selectedRows.has(rowId);
+    
+    const baseClasses = [
+      "transition-colors duration-150",
+      "hover:bg-gray-50",
+      isSelected && "bg-blue-50",
+    ];
+
+    if (stripeRows && !isSelected) {
+      baseClasses.push(index % 2 === 0 ? "bg-white" : "bg-gray-25");
+    }
+
+    return baseClasses.filter(Boolean).join(" ");
+  };
+
   return (
     <div className="relative">
       <LoadingOverlay visible={showOverlay} />
@@ -238,20 +257,32 @@ function DynamicTableInner<T extends Record<string, unknown>>(
       ) : (
         <>
           <div className="flex justify-between p-2 bg-white">
-            <SearchInput
-              onSearch={handleSearch}
-              placeholder="Search files..."
-            />
+            <div className="flex gap-2 w-full">
+              {/* Selection info */}
+              {selectable && selectedRows.size > 0 && (
+                <div className="mt-2 text-sm text-gray-600">
+                  {selectedRows.size} row{selectedRows.size !== 1 ? "s" : ""}{" "}
+                  selected
+                </div>
+              )}
+              <SearchInput
+                onSearch={handleSearch}
+                placeholder="Search files..."
+              />
+            </div>
+
             {actionButton &&
               actionButton?.map((btn, idx) => (
-                <Button
-                  key={idx}
+                <div className="flex w-full justify-end"  key={`action-div-${idx}`}>
+                  <Button
+                  key={`action-btn-${idx}`}
                   onClick={btn.onClick}
                   className="flex items-center gap-2"
                   disabled={btn.onClick.length > 0 && selectedRows.size === 0}
                 >
                   <UserRoundPlus className="size-4" /> <span>{btn.label}</span>
-                </Button>
+                </Button></div>
+                
               ))}
           </div>
 
@@ -298,12 +329,12 @@ function DynamicTableInner<T extends Record<string, unknown>>(
 
             <tbody>
               {data.length > 0
-                ? data.map((row) => {
+                ? data.map((row, index) => {
                     const rowId = getRowId(row);
                     return (
                       <tr
                         key={rowId}
-                        className="hover:bg-gray-50 transition-colors duration-150"
+                        className={getRowClasses(row, index)}
                       >
                         {selectable && (
                           <td className="px-4 py-2 border-b">
@@ -357,14 +388,6 @@ function DynamicTableInner<T extends Record<string, unknown>>(
             currentPage={currentPage}
             onPageChange={onPageChange}
           />
-
-          {/* Selection info */}
-          {selectable && selectedRows.size > 0 && (
-            <div className="mt-2 text-sm text-gray-600">
-              {selectedRows.size} row{selectedRows.size !== 1 ? "s" : ""}{" "}
-              selected
-            </div>
-          )}
         </>
       )}
     </div>

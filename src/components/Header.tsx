@@ -11,6 +11,7 @@ export default function Header() {
   const [isLoading, setIsLoading] = useState(true);
   const [username, setUsername] = useState("");
   const [userRole, setUserRole] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -30,7 +31,7 @@ export default function Header() {
       const userFullname = `${storedUser?.first_name ?? ""} ${
         storedUser?.last_name ?? ""
       } (Role:${storedUser?.role})`;
-      
+
       setUsername(initials);
       setUserRole(userFullname);
       setIsLoading(false);
@@ -47,7 +48,7 @@ export default function Header() {
     },
     {
       label: "My Profile",
-      onClick: () =>{navigate('/profile')},
+      onClick: () => navigate("/profile"),
       icon: <CircleUser className="w-4 h-4" />,
       iconPosition: "left" as const,
     },
@@ -68,11 +69,18 @@ export default function Header() {
   return (
     <header className="w-full bg-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-blue-500"><Link to={UserService.isAdmin() ? "/admin" : "/"}>Sentinel Demo</Link></h1>
+        <h1 className="text-xl font-bold text-blue-500">
+          <Link to={UserService.isAdmin() ? "/admin" : "/"}>Sentinel Demo</Link>
+        </h1>
         {/* <Navbar />        */}
-        {!isLoading && isAuthenticated &&(
+        {!isLoading && isAuthenticated && (
           <div className="flex justify-center items-center">
-            <Dropdown items={dropdownItems} text={username} />
+            <Dropdown
+              items={dropdownItems}
+              text={username}
+              isOpen={dropdownOpen}
+              onToggle={setDropdownOpen}
+            />
           </div>
         )}
       </div>
