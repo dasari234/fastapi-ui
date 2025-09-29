@@ -8,7 +8,7 @@ import { useAuthContext } from "../../../hooks";
 import { useForm } from "../../../lib/use-form";
 import type { Login } from "../../../types";
 
-function UserLogin() {
+function UserLoginPage() {
   const { login, isLoading } = useAuthContext();
 
   const form = useForm<Login>({
@@ -124,4 +124,4 @@ function UserLogin() {
   );
 }
 
-export default UserLogin;
+export default UserLoginPage;

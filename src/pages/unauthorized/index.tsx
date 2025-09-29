@@ -2,7 +2,7 @@ import { type JSX } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
 
-export default function Unauthorized(): JSX.Element {
+export default function UnauthorizedPage(): JSX.Element {
   const navigate = useNavigate();
 
   return (

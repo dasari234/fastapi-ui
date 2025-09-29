@@ -6,7 +6,7 @@ import type { Signup, UserResponse } from "../../../types";
 import { DynamicForm, type Field } from "../../../components/DynamicForm";
 import type { UseFormReturnType } from "../../../lib/use-form/types";
 
-function UserSignup() {
+function UserRegistrationPage() {
   const navigate = useNavigate();
 
   const formFields: Field<Signup>[] = [
@@ -74,4 +74,4 @@ function UserSignup() {
   );
 }
 
-export default UserSignup;
+export default UserRegistrationPage;

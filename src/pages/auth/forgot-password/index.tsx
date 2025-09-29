@@ -2,7 +2,7 @@ import { toast } from "react-toastify";
 import { DynamicForm, type Field } from "../../../components/DynamicForm";
 import AuthService from "../../../services/auth";
 
-const ForgotPassword = () => {
+const ForgotPasswordPage = () => {
   const emailField: Field[] = [
     {
       label: "Email",
@@ -46,4 +46,4 @@ const ForgotPassword = () => {
   );
 };
 
-export default ForgotPassword;
+export default ForgotPasswordPage;

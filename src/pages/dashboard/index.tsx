@@ -17,6 +17,9 @@ const DashboardPage: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isDownload, setIsDownload] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<FileRow | null>();
+  const [isLoading, setIsLoading] = useState(false);
 
   interface FileRow extends Record<string, unknown> {
     id: number;
@@ -55,16 +58,26 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (row: FileRow) => {
+  const handleDelete = async () => {
     try {
-      const response = await S3Service.deleteFile(row.s3_key || "");
+      setIsLoading(true);
+      const row = selectedRow;
+      const response = await S3Service.deleteFile(row?.s3_key || "");
       if (Object.hasOwn(response, "deleted_key")) {
         toast.success("File deleted successfully");
         tableRef.current?.refresh();
       }
     } catch (err) {
-      console.error("Failed to delete", err);
+      console.error("Failed to delete", err);      
+    } finally {
+      setIsLoading(false);
+      setDeleteModal(false);
     }
+  };
+
+  const handleDeleteModal = async (row: FileRow) => {
+    setSelectedRow(row);
+    setDeleteModal(true);
   };
 
   const handleDownload = async (row: FileRow) => {
@@ -169,7 +182,7 @@ const DashboardPage: React.FC = () => {
               variant="ghost"
               size="icon"
               className="text-red-500 hover:text-red-700"
-              onClick={() => handleDelete(row)}
+              onClick={() => handleDeleteModal(row)}
             >
               <Trash2 className="size-3.5" />
             </Button>
@@ -226,6 +239,37 @@ const DashboardPage: React.FC = () => {
               <p className="text-gray-600 text-sm">Downloading file...</p>
             </div>
           )}
+        </div>
+      </Modal>
+
+      <Modal
+        open={deleteModal}
+        onClose={() => setDeleteModal(false)}
+        title="Delete User"
+        showCloseButton={true}
+      >
+        <div className="max-h-[80vh] overflow-auto p-2">
+          <h1>
+            Are you sure, you want to delete <b>{selectedRow?.original_filename}</b>?
+          </h1>
+          <div className="flex justify-end gap-4 mt-5">
+            <Button
+              variant="outline"
+              disabled={isLoading}
+              onClick={() => setDeleteModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isLoading}
+              loading={isLoading}
+            >
+              Yes, Delete
+            </Button>
+          </div>
         </div>
       </Modal>
     </>

@@ -33,7 +33,7 @@ interface UserRow {
   last_login?: string;
 }
 
-function UserManagement() {
+function UserManagementPage() {
   const { user } = useAuthContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
@@ -298,4 +298,4 @@ function UserManagement() {
   );
 }
 
-export default UserManagement;
+export default UserManagementPage;

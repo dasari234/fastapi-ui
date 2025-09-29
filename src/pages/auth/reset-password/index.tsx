@@ -11,7 +11,7 @@ type ResetPasswordForm = {
   confirm_password: string;
 };
 
-const RestPassword = () => {
+const RestPasswordPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get("token");
@@ -113,4 +113,4 @@ const RestPassword = () => {
   );
 };
 
-export default RestPassword;
+export default RestPasswordPage;
