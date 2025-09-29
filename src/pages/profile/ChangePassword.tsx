@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { DynamicForm, type Field } from "../../components/DynamicForm";
@@ -15,6 +15,7 @@ type ResetPasswordForm = {
 
 export default function ChangePassword() {
   const { logout } = useAuthContext();
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const passwordFields: Field[] = [
@@ -68,17 +69,19 @@ export default function ChangePassword() {
       }
 
       const payload = { ...form.values };
-
+      setIsLoading(true);
       const response = (await UserService.changePassword(payload)) as
         | { success?: boolean; message?: string }
         | undefined;
       if (response?.success) {
-        toast.success("Password Chnanged Successfully");
+        toast.success("Password Changed Successfully");
         logout();
         navigate("/login");
       }
     } catch (err: unknown) {
       toast.error(err instanceof Error);
+    } finally {
+      setIsLoading(false)
     }
   };
 
@@ -92,6 +95,7 @@ export default function ChangePassword() {
         formFields={passwordFields}
         buttonLabel="Update Password"
         onSubmit={handleUpdatePassword}
+        isLoading={isLoading}
       />
     </div>
   );

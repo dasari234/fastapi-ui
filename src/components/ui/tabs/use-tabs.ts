@@ -68,7 +68,7 @@ export const useTabs = (
 
   const setActive = useCallback(
     (tabId: string) => {
-      if (controlledActiveTab) return; // parent controls it
+      if (controlledActiveTab) return;
       const tab = tabs.find((t) => t.id === tabId);
       if (tab && !tab.disabled) {
         setInternalActive(tabId);

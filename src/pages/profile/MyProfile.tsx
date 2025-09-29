@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { DynamicForm, type Field } from "../../components/DynamicForm";
 import { useAuthContext } from "../../hooks";
@@ -9,7 +9,7 @@ import type { UserResponse } from "../../types";
 
 export default function MyProfile() {
   const { user, setUser } = useAuthContext();
-
+  const [isLoading, setIsLoading] = useState(false);
   const formFields: Field[] = [
     { label: "First Name", name: "first_name", type: "text", disabled: false },
     { label: "Last Name", name: "last_name", type: "text", disabled: false },
@@ -33,6 +33,7 @@ export default function MyProfile() {
     if (!user?.id) return;
 
     try {
+      setIsLoading(true)
       await UserService.updateUser(
         user.id,
         Object.fromEntries(
@@ -48,6 +49,8 @@ export default function MyProfile() {
       toast.success("User Updated");
     } catch {
       toast.error("Failed to update user");
+    } finally {
+      setIsLoading(false)
     }
   };
 
@@ -68,6 +71,7 @@ export default function MyProfile() {
             }
             buttonLabel="Update"
             onSubmit={handleUpdate}
+            isLoading={isLoading}
           />
         </div>
       ) : (

@@ -14,7 +14,10 @@ export const useTabNavigation = ({
 
   const updateScrollState = useCallback(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container) {
+      console.log('No container found');
+      return;
+    }
     
     const isHorizontal = orientation === "horizontal";
     const scrollSize = isHorizontal ? container.scrollWidth : container.scrollHeight;
@@ -22,8 +25,19 @@ export const useTabNavigation = ({
     const currentScroll = isHorizontal ? container.scrollLeft : container.scrollTop;
     const maxScroll = Math.max(0, scrollSize - clientSize);
 
-    setShowPrevButton(currentScroll > 10);
-    setShowNextButton(currentScroll < maxScroll - 10);
+    console.log('Scroll state:', {
+      scrollSize,
+      clientSize,
+      currentScroll,
+      maxScroll,
+      hasOverflow: scrollSize > clientSize
+    });
+
+    const shouldShowPrev = currentScroll > 10;
+    const shouldShowNext = currentScroll < maxScroll - 10;
+
+    setShowPrevButton(shouldShowPrev);
+    setShowNextButton(shouldShowNext);
   }, [containerRef, orientation]);
 
   const scrollBy = useCallback(
@@ -46,23 +60,29 @@ export const useTabNavigation = ({
   const scrollToTab = useCallback(
     (tabId: string) => {
       const container = containerRef.current;
-      const tab = container?.querySelector(`[data-tab-id="${tabId}"]`) as HTMLElement;
-      if (!container || !tab) return;
+      if (!container) return;
+
+      // Find the tab element - we'll add data attributes to tabs
+      const tabElement = container.querySelector(`[data-tab-id="${tabId}"]`) as HTMLElement;
+      if (!tabElement) return;
 
       const isHorizontal = orientation === "horizontal";
-      const tabRect = tab.getBoundingClientRect();
+      const tabRect = tabElement.getBoundingClientRect();
       const containerRect = container.getBoundingClientRect();
 
       if (isHorizontal) {
         const tabLeft = tabRect.left - containerRect.left + container.scrollLeft;
         const tabRight = tabRect.right - containerRect.left + container.scrollLeft;
+        const containerWidth = container.clientWidth;
         
+        // If tab is not fully visible, scroll to make it visible
         if (tabLeft < container.scrollLeft) {
-          container.scrollTo({ left: tabLeft - 10, behavior: "smooth" });
-        } else if (tabRight > container.scrollLeft + container.clientWidth) {
-          container.scrollTo({ left: tabRight - container.clientWidth + 10, behavior: "smooth" });
+          container.scrollTo({ left: tabLeft, behavior: "smooth" });
+        } else if (tabRight > container.scrollLeft + containerWidth) {
+          container.scrollTo({ left: tabRight - containerWidth, behavior: "smooth" });
         }
       }
+      // Similar logic for vertical orientation...
     },
     [containerRef, orientation]
   );
@@ -71,21 +91,28 @@ export const useTabNavigation = ({
     const container = containerRef.current;
     if (!container) return;
 
-    // Add data attribute to tabs for easier selection
-    const tabs = container.querySelectorAll('[data-tab-id]');
-    tabs.forEach(tab => tab.removeAttribute('data-tab-id'));
-
+    // Set up observers
     const resizeObserver = new ResizeObserver(updateScrollState);
     resizeObserver.observe(container);
 
+    const mutationObserver = new MutationObserver(updateScrollState);
+    mutationObserver.observe(container, { 
+      childList: true, 
+      subtree: true,
+      attributes: true 
+    });
+
     container.addEventListener("scroll", updateScrollState, { passive: true });
 
-    // Initial check with delay
-    const timer = setTimeout(updateScrollState, 100);
+    // Initial check with multiple attempts (DOM might not be ready immediately)
+    const attempts = [100, 300, 500];
+    attempts.forEach(delay => {
+      setTimeout(updateScrollState, delay);
+    });
 
     return () => {
-      clearTimeout(timer);
       resizeObserver.disconnect();
+      mutationObserver.disconnect();
       container.removeEventListener("scroll", updateScrollState);
     };
   }, [containerRef, updateScrollState]);

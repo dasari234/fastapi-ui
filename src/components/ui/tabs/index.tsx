@@ -118,7 +118,7 @@ export const Tabs = ({
 
       // Reserve space for navigation buttons if enabled
       if (config.showNavigationButtons !== false) {
-        reservedSpace += 80; // Space for both buttons
+        reservedSpace += 80; 
       }
 
       // Reserve space for add button if enabled
@@ -128,7 +128,7 @@ export const Tabs = ({
 
       const newWidth = Math.max(200, width - reservedSpace);
 
-      // Only update if changed significantly (more than 5px) to avoid micro-adjustments
+      // Only update if changed significantly
       setAvailableWidth((prev) =>
         Math.abs(prev - newWidth) > 5 ? newWidth : prev
       );
@@ -156,13 +156,13 @@ export const Tabs = ({
       resizeObserver.disconnect();
       window.removeEventListener("resize", updateAvailableWidth);
     };
-  }, [config.showNavigationButtons, config.addable]); // Stable dependencies
+  }, [config.showNavigationButtons, config.addable]);
 
   // Scroll state management
   useLayoutEffect(() => {
     const timer = setTimeout(() => {
       updateScrollState();
-    }, 200); // Delay to allow animations to complete
+    }, 200); 
 
     return () => clearTimeout(timer);
   }, [updateScrollState, tabs]);
@@ -287,7 +287,7 @@ export const Tabs = ({
               onPrev={handlePrev}
               onNext={handleNext}
               className={cn(
-                orientation === "horizontal" ? "border-r" : "border-b",
+                orientation === "horizontal" && showPrevButton ? "border-r" : "border-b",
                 "flex-shrink-0"
               )}
             />
@@ -334,7 +334,7 @@ export const Tabs = ({
               onPrev={handlePrev}
               onNext={handleNext}
               className={cn(
-                orientation === "horizontal" ? "border-l" : "border-t",
+                orientation === "horizontal" && showNextButton ? "border-l" : "border-t",
                 "flex-shrink-0"
               )}
             />

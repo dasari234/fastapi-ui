@@ -77,6 +77,7 @@ export const TabComponent = forwardRef<HTMLButtonElement, TabComponentProps>(
           disabled={tab.disabled}
           className={getVariantClasses()}
           type="button"
+           data-tab-id={tab.id} 
         >
           {tab.icon && <span className="flex-shrink-0 z-10">{tab.icon}</span>}
           <span className="truncate max-w-[120px] z-10">{tab.label}</span>
