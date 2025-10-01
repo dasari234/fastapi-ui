@@ -183,4 +183,13 @@ export interface CheckboxProps<T extends object> extends BaseFieldProps<T> {
   onChange: () => void;
 }
 
+export interface RadioProps<T extends object> extends BaseFieldProps<T> {
+  label?: string;
+  description?: string;
+  containerClassName?: string;
+  size?: "sm" | "md" | "lg";
+  className?: string;
+  checked?: boolean;
+  onChange: () => void;
+}
 

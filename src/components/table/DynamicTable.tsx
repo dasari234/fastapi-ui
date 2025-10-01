@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useImperativeHandle,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { toast } from "react-toastify";
@@ -15,11 +16,15 @@ import { LoadingOverlay } from "../ui/loading-overlay/LoadingOverlay";
 import Pagination from "../ui/pagination/Pagination";
 import SearchInput from "../ui/search/SearchInput";
 
-interface Column<T> {
+export interface Column<T> {
   key: keyof T | string;
   label: string;
   render?: (row: T) => React.ReactNode;
   sortable?: boolean;
+  fixed?: "left" | "right";
+  width?: string;
+  align?: "left" | "right" | "center";
+  truncate?: boolean;
 }
 
 interface ActionButton {
@@ -52,7 +57,9 @@ interface DynamicTableProps<T> {
   selectable?: boolean;
   onSelectionChange?: (selectedRows: T[]) => void;
   rowIdentifier?: keyof T;
-  stripeRows?:boolean
+  stripeRows?: boolean;
+  fixedHeader?: boolean;
+  maxHeight?: string;
 }
 
 /**
@@ -77,7 +84,9 @@ function DynamicTableInner<T extends Record<string, unknown>>(
     selectable = false,
     onSelectionChange,
     rowIdentifier = "id" as keyof T,
-    stripeRows=true
+    stripeRows = true,
+    fixedHeader = false,
+    maxHeight = "65vh",
   }: DynamicTableProps<T>,
   ref: React.Ref<DynamicTableRef>
 ) {
@@ -93,6 +102,8 @@ function DynamicTableInner<T extends Record<string, unknown>>(
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  const tableContainerRef = useRef<HTMLDivElement>(null);
 
   const fetchData = async (page: number = currentPage, overlay = true) => {
     try {
@@ -183,6 +194,51 @@ function DynamicTableInner<T extends Record<string, unknown>>(
     }));
   }, [columns, data]);
 
+  // Calculate fixed columns
+  const fixedLeftColumns = useMemo(
+    () => headers.filter((col) => col.fixed === "left"),
+    [headers]
+  );
+
+  const fixedRightColumns = useMemo(
+    () => headers.filter((col) => col.fixed === "right"),
+    [headers]
+  );
+
+  const regularColumns = useMemo(
+    () => headers.filter((col) => !col.fixed),
+    [headers]
+  );
+
+  // Calculate cumulative left positions for fixed columns
+  const calculateFixedLeftPositions = useMemo(() => {
+    let leftPosition = selectable ? 48 : 0;
+
+    return fixedLeftColumns.map((column) => {
+      const currentLeft = leftPosition;
+      const columnWidth = column.width ? parseInt(column.width) : 100;
+      leftPosition += columnWidth;
+      return currentLeft;
+    });
+  }, [fixedLeftColumns, selectable]);
+
+  // Calculate cumulative right positions for fixed columns
+  const calculateFixedRightPositions = useMemo(() => {
+    let rightPosition = 0;
+
+    // Reverse the fixed right columns to calculate from right to left
+    const reversedColumns = [...fixedRightColumns].reverse();
+
+    return reversedColumns
+      .map((column) => {
+        const columnWidth = column.width ? parseInt(column.width) : 100;
+        const currentRight = rightPosition;
+        rightPosition += columnWidth;
+        return currentRight;
+      })
+      .reverse();
+  }, [fixedRightColumns]);
+
   const handleSearch = (query: string) => {
     if (query !== searchQuery) {
       setSearchQuery(query);
@@ -234,18 +290,293 @@ function DynamicTableInner<T extends Record<string, unknown>>(
   const getRowClasses = (row: T, index: number) => {
     const rowId = getRowId(row);
     const isSelected = selectedRows.has(rowId);
-    
-    const baseClasses = [
-      "transition-colors duration-150",
-      "hover:bg-gray-50",
-      isSelected && "bg-blue-50",
-    ];
 
-    if (stripeRows && !isSelected) {
-      baseClasses.push(index % 2 === 0 ? "bg-white" : "bg-gray-25");
+    const baseClasses = ["transition-colors duration-150", "group"];
+
+    // Handle selection and hover states at row level
+    if (isSelected) {
+      baseClasses.push("bg-blue-100");
+    } else if (stripeRows) {
+      baseClasses.push(index % 2 === 0 ? "bg-white" : "bg-gray-50");
+    } else {
+      baseClasses.push("bg-white");
     }
 
     return baseClasses.filter(Boolean).join(" ");
+  };
+
+  const getColumnClasses = (
+    column: Column<T>,
+    row: T,
+    rowIndex: number,
+    isHeader = false,
+    isLastFixedLeft: boolean = false,
+    isFirstFixedRight: boolean = false
+  ) => {
+    const rowId = getRowId(row);
+    const isSelected = selectedRows.has(rowId);
+
+    const baseClasses = [
+      "px-4 py-2 text-sm border-b",
+      selectable && "pl-0",
+      isHeader ? "font-semibold text-gray-700" : "text-gray-700",
+      column.truncate && "truncate",
+      "overflow-hidden",
+      "transition-colors duration-150",
+    ];
+
+    if (!isHeader) {
+      baseClasses.push("group-hover:bg-blue-50");
+      if (isSelected) baseClasses.push("bg-blue-100 group-hover:bg-blue-200");
+      else if (stripeRows)
+        baseClasses.push(rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50");
+    }
+
+    if (column.fixed === "left") {
+      baseClasses.push("sticky left-0 z-40");
+      if (isLastFixedLeft)
+        baseClasses.push(
+          "after:absolute after:right-0 after:top-0 after:h-full after:w-[1px] after:bg-gray-300"
+        );
+    } else if (column.fixed === "right") {
+      baseClasses.push("sticky right-0 z-40");
+      if (isFirstFixedRight)
+        baseClasses.push(
+          "before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-gray-300"
+        );
+    }
+
+    return baseClasses.filter(Boolean).join(" ");
+  };
+
+  const getHeaderClasses = (
+    column: Column<T>,
+    isLastFixedLeft: boolean = false,
+    isFirstFixedRight: boolean = false
+  ) => {
+    const baseClasses = [
+      "px-4 py-2 text-sm font-semibold text-gray-700 border-b",
+      selectable && "pl-0",
+      "group cursor-pointer select-none",
+      column.truncate && "truncate",
+      "overflow-hidden",
+      "bg-gray-100",
+    ];
+
+    if (fixedHeader) {
+      baseClasses.push("sticky top-0");
+      if (!column.fixed) baseClasses.push("z-30");
+    }
+
+    if (column.fixed === "left") {
+      baseClasses.push("sticky left-0 z-50");
+      if (isLastFixedLeft)
+        baseClasses.push(
+          "after:absolute after:right-0 after:top-0 after:h-full after:w-[1px] after:bg-gray-300"
+        );
+    } else if (column.fixed === "right") {
+      baseClasses.push("sticky right-0 z-50");
+      if (isFirstFixedRight)
+        baseClasses.push(
+          "before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-gray-300"
+        );
+    }
+
+    return baseClasses.filter(Boolean).join(" ");
+  };
+
+  const getCheckboxHeaderClasses = (isLastFixedLeft: boolean) => {
+    const baseClasses = ["px-2 py-2 border-b bg-gray-100 sticky left-0 z-40"];
+
+    if (fixedHeader) {
+      baseClasses.push("top-0");
+    }
+
+    if (isLastFixedLeft) {
+      baseClasses.push("shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)]");
+    }
+
+    return baseClasses.join(" ");
+  };
+
+  const getCheckboxCellClasses = (
+    row: T,
+    rowIndex: number,
+    isLastFixedLeft: boolean
+  ) => {
+    const rowId = getRowId(row);
+    const isSelected = selectedRows.has(rowId);
+
+    const baseClasses = [
+      "px-2 py-2 border-b sticky left-0 z-20 transition-colors duration-150",
+      "group-hover:bg-blue-50",
+    ];
+
+    if (stripeRows && !isSelected) {
+      baseClasses.push(rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50");
+    } else if (isSelected) {
+      baseClasses.push("bg-blue-100 group-hover:bg-blue-200");
+    }
+
+    if (isLastFixedLeft) {
+      baseClasses.push("shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)]");
+    }
+
+    return baseClasses.join(" ");
+  };
+
+  const renderTableCell = (
+    column: Column<T>,
+    row: T,
+    rowIndex: number,
+    leftPosition: number = 0,
+    rightPosition: number = 0,
+    isLastFixedLeft: boolean = false,
+    isFirstFixedRight: boolean = false
+  ) => {
+    let value: React.ReactNode;
+    if (column.render) {
+      value = column.render(row);
+    } else {
+      const nested = getNestedValue(row, String(column.key));
+      value = nested !== undefined && nested !== null ? String(nested) : "";
+    }
+
+    const cellContent = column.truncate ? (
+      <div
+        className="truncate w-full"
+        title={typeof value === "string" ? value : undefined}
+      >
+        {value !== undefined && value !== null ? value : ""}
+      </div>
+    ) : value !== undefined && value !== null ? (
+      value
+    ) : (
+      ""
+    );
+
+    return (
+      <td
+        key={String(column.key)}
+        className={`${getColumnClasses(
+          column,
+          row,
+          rowIndex,
+          false,
+          isLastFixedLeft,
+          isFirstFixedRight
+        )} ${
+          column.align === "center"
+            ? "text-center"
+            : column.align === "right"
+            ? "text-right"
+            : "text-left"
+        }`}
+        style={
+          column.fixed === "left"
+            ? {
+                width: column.width,
+                minWidth: column.width,
+                maxWidth: column.width,
+                left: `${leftPosition}px`,
+              }
+            : column.fixed === "right"
+            ? {
+                width: column.width,
+                minWidth: column.width,
+                maxWidth: column.width,
+                right: `${rightPosition}px`,
+              }
+            : column.width
+            ? {
+                width: column.width,
+                minWidth: column.width,
+                maxWidth: column.width,
+              }
+            : undefined
+        }
+      >
+        {cellContent}
+      </td>
+    );
+  };
+
+  const renderTableHeader = (
+    column: Column<T>,
+    leftPosition: number = 0,
+    rightPosition: number = 0,
+    isLastFixedLeft: boolean = false,
+    isFirstFixedRight: boolean = false
+  ) => {
+    const isActive = sortBy === column.key;
+
+    return (
+      <th
+        key={String(column.key)}
+        className={getHeaderClasses(column, isLastFixedLeft, isFirstFixedRight)}
+        style={
+          column.fixed === "left"
+            ? {
+                width: column.width,
+                minWidth: column.width,
+                maxWidth: column.width,
+                left: `${leftPosition}px`,
+              }
+            : column.fixed === "right"
+            ? {
+                width: column.width,
+                minWidth: column.width,
+                maxWidth: column.width,
+                right: `${rightPosition}px`, 
+              }
+            : column.width
+            ? {
+                width: column.width,
+                minWidth: column.width,
+                maxWidth: column.width,
+              }
+            : undefined
+        }
+        scope="col"
+        onClick={() => handleSort(String(column.key), column.sortable)}
+      >
+        <div
+          className={`flex items-center justify-between w-full ${
+            column.truncate ? "min-w-0" : ""
+          }`}
+        >
+          <span
+            className={`
+              ${column.truncate ? "truncate flex-1 min-w-0" : "flex-1"}
+              ${
+                column.align === "center"
+                  ? "text-center"
+                  : column.align === "right"
+                  ? "text-right"
+                  : "text-left"
+              }
+            `}
+            title={column.label}
+          >
+            {column.label}
+          </span>
+
+          {column.sortable && (
+            <div className="flex-shrink-0 ml-2">
+              {isActive ? (
+                sortOrder === "asc" ? (
+                  <ArrowUp className="w-4 h-4 opacity-40 group-hover:opacity-70" />
+                ) : (
+                  <ArrowDown className="w-4 h-4 opacity-40 group-hover:opacity-70" />
+                )
+              ) : (
+                <ArrowUpDown className="w-4 h-4 opacity-40 group-hover:opacity-70" />
+              )}
+            </div>
+          )}
+        </div>
+      </th>
+    );
   };
 
   return (
@@ -273,115 +604,167 @@ function DynamicTableInner<T extends Record<string, unknown>>(
 
             {actionButton &&
               actionButton?.map((btn, idx) => (
-                <div className="flex w-full justify-end"  key={`action-div-${idx}`}>
-                  <Button
-                  key={`action-btn-${idx}`}
-                  onClick={btn.onClick}
-                  className="flex items-center gap-2"
-                  disabled={btn.onClick.length > 0 && selectedRows.size === 0}
+                <div
+                  className="flex w-full justify-end"
+                  key={`action-div-${idx}`}
                 >
-                  <UserRoundPlus className="size-4" /> <span>{btn.label}</span>
-                </Button></div>
-                
+                  <Button
+                    key={`action-btn-${idx}`}
+                    onClick={btn.onClick}
+                    className="flex items-center gap-2"
+                    disabled={btn.onClick.length > 0 && selectedRows.size === 0}
+                  >
+                    <UserRoundPlus className="size-4" />{" "}
+                    <span>{btn.label}</span>
+                  </Button>
+                </div>
               ))}
           </div>
 
-          <table className="min-w-full border border-gray-200 bg-white shadow-md rounded-lg">
-            <thead>
-              <tr className="bg-gray-100 text-left">
-                {selectable && (
-                  <th className="px-4 py-2 border-b">
-                    <Checkbox
-                      checked={isAllSelected}
-                      indeterminate={isIndeterminate}
-                      onChange={toggleSelectAll}
-                    />
-                  </th>
-                )}
-
-                {headers.map((col) => {
-                  const isActive = sortBy === col.key;
-                  return (
+          {/* Scrollable table container with proper overflow handling */}
+          <div
+            ref={tableContainerRef}
+            className="overflow-auto relative border border-gray-200 rounded-lg bg-white"
+            style={{
+              maxHeight: fixedHeader ? maxHeight : "none",
+            }}
+          >
+            <table className="min-w-full bg-white relative">
+              <thead className="bg-gray-100">
+                <tr>
+                  {selectable && (
                     <th
-                      key={String(col.key)}
-                      className="group px-4 py-2 text-sm font-semibold text-gray-700 border-b"
-                      scope="col"
-                      onClick={() => handleSort(String(col.key), col.sortable)}
+                      className={getCheckboxHeaderClasses(
+                        fixedLeftColumns.length === 0
+                      )}
+                      style={{
+                        width: "48px",
+                        minWidth: "48px",
+                        maxWidth: "48px",
+                        left: "0px",
+                      }}
                     >
-                      <div className="flex justify-between items-center">
-                        <span className="w-min truncate">{col.label}</span>
-                        {col.sortable &&
-                          (isActive ? (
-                            sortOrder === "asc" ? (
-                              <ArrowUp className="w-4 h-4 opacity-40 group-hover:opacity-70" />
-                            ) : (
-                              <ArrowDown className="w-4 h-4 opacity-40 group-hover:opacity-70" />
-                            )
-                          ) : (
-                            <ArrowUpDown className="w-4 h-4 opacity-40 group-hover:opacity-70" />
-                          ))}
-                      </div>
+                      <Checkbox
+                        checked={isAllSelected}
+                        indeterminate={isIndeterminate}
+                        onChange={toggleSelectAll}
+                      />
                     </th>
-                  );
-                })}
-              </tr>
-            </thead>
-
-            <tbody>
-              {data.length > 0
-                ? data.map((row, index) => {
-                    const rowId = getRowId(row);
-                    return (
-                      <tr
-                        key={rowId}
-                        className={getRowClasses(row, index)}
-                      >
-                        {selectable && (
-                          <td className="px-4 py-2 border-b">
-                            <Checkbox
-                              checked={selectedRows.has(rowId)}
-                              onChange={() => toggleRow(rowId)}
-                            />
-                          </td>
-                        )}
-                        {headers.map((col) => {
-                          let value: React.ReactNode;
-                          if (col.render) {
-                            value = col.render(row);
-                          } else {
-                            const nested = getNestedValue(row, String(col.key));
-                            value =
-                              nested !== undefined && nested !== null
-                                ? String(nested)
-                                : "";
-                          }
-
-                          return (
-                            <td
-                              key={String(col.key)}
-                              className="px-4 py-2 text-sm text-gray-700 border-b"
-                            >
-                              {value !== undefined && value !== null
-                                ? value
-                                : ""}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })
-                : !loading && (
-                    <tr>
-                      <td
-                        colSpan={headers.length + (selectable ? 1 : 0)}
-                        className="py-4 text-center text-md text-gray-600"
-                      >
-                        No records found.
-                      </td>
-                    </tr>
                   )}
-            </tbody>
-          </table>
+
+                  {/* Fixed left columns with cumulative positioning */}
+                  {fixedLeftColumns.map((column, index) =>
+                    renderTableHeader(
+                      column,
+                      calculateFixedLeftPositions[index],
+                      0,
+                      index === fixedLeftColumns.length - 1,
+                      false
+                    )
+                  )}
+
+                  {/* Regular columns */}
+                  {regularColumns.map((column) =>
+                    renderTableHeader(column, 0, 0, false, false)
+                  )}
+
+                  {/* Fixed right columns with cumulative positioning */}
+                  {fixedRightColumns.map((column, index) =>
+                    renderTableHeader(
+                      column,
+                      0,
+                      calculateFixedRightPositions[index],
+                      false,
+                      index === 0
+                    )
+                  )}
+                </tr>
+              </thead>
+
+              <tbody>
+                {data.length > 0
+                  ? data.map((row, rowIndex) => {
+                      const rowId = getRowId(row);
+                      return (
+                        <tr
+                          key={rowId}
+                          className={getRowClasses(row, rowIndex)}
+                        >
+                          {selectable && (
+                            <td
+                              className={getCheckboxCellClasses(
+                                row,
+                                rowIndex,
+                                fixedLeftColumns.length === 0
+                              )}
+                              style={{
+                                width: "48px",
+                                minWidth: "48px",
+                                maxWidth: "48px",
+                                left: "0px",
+                              }}
+                            >
+                              <Checkbox
+                                checked={selectedRows.has(rowId)}
+                                onChange={() => toggleRow(rowId)}
+                              />
+                            </td>
+                          )}
+
+                          {/* Fixed left columns with cumulative positioning */}
+                          {fixedLeftColumns.map((col, colIndex) =>
+                            renderTableCell(
+                              col,
+                              row,
+                              rowIndex,
+                              calculateFixedLeftPositions[colIndex],
+                              0,
+                              colIndex === fixedLeftColumns.length - 1,
+                              false
+                            )
+                          )}
+
+                          {/* Regular columns */}
+                          {regularColumns.map((col) =>
+                            renderTableCell(
+                              col,
+                              row,
+                              rowIndex,
+                              0,
+                              0,
+                              false,
+                              false
+                            )
+                          )}
+
+                          {/* Fixed right columns with cumulative positioning */}
+                          {fixedRightColumns.map((col, colIndex) =>
+                            renderTableCell(
+                              col,
+                              row,
+                              rowIndex,
+                              0,
+                              calculateFixedRightPositions[colIndex],
+                              false,
+                              colIndex === 0
+                            )
+                          )}
+                        </tr>
+                      );
+                    })
+                  : !loading && (
+                      <tr>
+                        <td
+                          colSpan={headers.length + (selectable ? 1 : 0)}
+                          className="py-4 text-center text-md text-gray-600"
+                        >
+                          No records found.
+                        </td>
+                      </tr>
+                    )}
+              </tbody>
+            </table>
+          </div>
 
           <Pagination
             totalPages={totalPages}
@@ -399,5 +782,3 @@ const DynamicTable = forwardRef(DynamicTableInner) as <T>(
 ) => React.ReactElement;
 
 export default DynamicTable;
-
-// GET /api/v1/files?search={search_term}&limit={limit}&page={page}&folder={folder}&show_all_versions={true/false}

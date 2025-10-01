@@ -3,7 +3,10 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import FileUpload from "../../components/fileupload/FileUpload";
 import PDFView from "../../components/pdf-view/PDFView";
-import type { DynamicTableRef } from "../../components/table/DynamicTable";
+import type {
+  Column,
+  DynamicTableRef,
+} from "../../components/table/DynamicTable";
 import DynamicTable from "../../components/table/DynamicTable";
 import { Button } from "../../components/ui/Button";
 import Modal from "../../components/ui/modal/Modal";
@@ -68,7 +71,7 @@ const DashboardPage: React.FC = () => {
         tableRef.current?.refresh();
       }
     } catch (err) {
-      console.error("Failed to delete", err);      
+      console.error("Failed to delete", err);
     } finally {
       setIsLoading(false);
       setDeleteModal(false);
@@ -103,26 +106,50 @@ const DashboardPage: React.FC = () => {
     document.title = "Dashboard";
   }, []);
 
-  const columns = [
-    { key: "original_filename", label: "File Name", sortable: true },
-    { key: "version", label: "Version", sortable: true },
+  const columns: Column<FileRow>[] = [
+    {
+      key: "original_filename",
+      label: "File Name",
+      sortable: true,
+      fixed: "left",
+      width: "150px",
+      truncate: true,
+    },
+    {
+      key: "version",
+      label: "Version",
+      sortable: true,
+      fixed: "left",
+      width: "100px",
+    },
     {
       key: "file_size",
       label: "Size (MB)",
       sortable: true,
+      width: "120px",
+      truncate: true,
       render: (row: FileRow) => `${(row.file_size / 1000).toFixed(2)}`,
     },
-    { key: "user_details.first_name", label: "Uploaded By", sortable: true },
+    {
+      key: "user_details.first_name",
+      label: "Uploaded By",
+      sortable: true,
+      width: "150px",
+      truncate: true,
+    },
     {
       key: "created_at",
       label: "Created At",
       sortable: true,
+      width: "150px",
+      truncate: true,
       render: (row: FileRow) => formatDate(row.created_at),
     },
     {
       key: "updated_at",
       label: "Updated At",
       sortable: true,
+      width: "150px",
       render: (row: FileRow) =>
         row.updated_at ? formatDate(row.updated_at) : "—",
     },
@@ -130,11 +157,13 @@ const DashboardPage: React.FC = () => {
       key: "upload_status",
       label: "Status",
       sortable: true,
+      width: "100px",
     },
     {
       key: "score",
       label: "Score",
       sortable: true,
+      width: "100px",
       render: (row: FileRow) =>
         row.score !== undefined && row.score !== null
           ? row.score.toFixed(2)
@@ -144,6 +173,9 @@ const DashboardPage: React.FC = () => {
       key: "processing_time_ms",
       label: "Process Time",
       sortable: true,
+      fixed: "right",
+      width: "150px",
+      truncate: true,
       render: (row: FileRow) =>
         row.processing_time_ms !== undefined && row.processing_time_ms !== null
           ? `${row.processing_time_ms.toFixed(2)}ms`
@@ -153,6 +185,8 @@ const DashboardPage: React.FC = () => {
       key: "actions",
       label: "Actions",
       sortable: false,
+      fixed: "right",
+      width: "150px",
       render: (row: FileRow) => (
         <div className="flex gap-2">
           <Tooltip content="View" maxWidth="max-w-xl">
@@ -197,13 +231,20 @@ const DashboardPage: React.FC = () => {
       <div className="flex items-center justify-center mb-6">
         <FileUpload onSuccess={handleUploadSuccess} />
       </div>
-      <DynamicTable<FileRow>
-        url="/files"
-        limit={10}
-        ref={tableRef}
-        columns={columns}
-        responseKey="records"
-      />
+
+      {/* Add a wrapper div with proper styling for fixed columns */}
+      <div className="border border-gray-200 rounded-lg shadow-sm bg-white">
+        <DynamicTable<FileRow>
+          url="/files"
+          limit={10}
+          ref={tableRef}
+          columns={columns}
+          responseKey="records"
+          fixedHeader={true}
+          maxHeight="65vh"
+          // selectable={true}
+        />
+      </div>
 
       <Modal
         open={open}
@@ -250,7 +291,8 @@ const DashboardPage: React.FC = () => {
       >
         <div className="max-h-[80vh] overflow-auto p-2">
           <h1>
-            Are you sure, you want to delete <b>{selectedRow?.original_filename}</b>?
+            Are you sure, you want to delete{" "}
+            <b>{selectedRow?.original_filename}</b>?
           </h1>
           <div className="flex justify-end gap-4 mt-5">
             <Button
