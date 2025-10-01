@@ -119,7 +119,7 @@ const DashboardPage: React.FC = () => {
       key: "version",
       label: "Version",
       sortable: true,
-      fixed: "left",
+      // fixed: "left",
       width: "100px",
     },
     {
@@ -173,7 +173,7 @@ const DashboardPage: React.FC = () => {
       key: "processing_time_ms",
       label: "Process Time",
       sortable: true,
-      fixed: "right",
+      // fixed: "right",
       width: "150px",
       truncate: true,
       render: (row: FileRow) =>

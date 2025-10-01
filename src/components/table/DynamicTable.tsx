@@ -102,13 +102,16 @@ function DynamicTableInner<T extends Record<string, unknown>>(
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
+
+  const CHECKBOX_WIDTH = 48;
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
   const fetchData = async (page: number = currentPage, overlay = true) => {
     try {
       setError(null);
-      setShowOverlay(overlay);
+      setShowOverlay(!isFirstLoad && overlay);
       setLoading(true);
 
       const getSortKey = (key?: string) => key?.split(".").pop();
@@ -149,6 +152,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
     } finally {
       setLoading(false);
       setShowOverlay(false);
+      setIsFirstLoad(false);
     }
   };
 
@@ -212,7 +216,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
 
   // Calculate cumulative left positions for fixed columns
   const calculateFixedLeftPositions = useMemo(() => {
-    let leftPosition = selectable ? 48 : 0;
+    let leftPosition = selectable ? CHECKBOX_WIDTH : 0;
 
     return fixedLeftColumns.map((column) => {
       const currentLeft = leftPosition;
@@ -527,7 +531,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
                 width: column.width,
                 minWidth: column.width,
                 maxWidth: column.width,
-                right: `${rightPosition}px`, 
+                right: `${rightPosition}px`,
               }
             : column.width
             ? {
@@ -638,9 +642,9 @@ function DynamicTableInner<T extends Record<string, unknown>>(
                         fixedLeftColumns.length === 0
                       )}
                       style={{
-                        width: "48px",
-                        minWidth: "48px",
-                        maxWidth: "48px",
+                        width: `${CHECKBOX_WIDTH}px`,
+                        minWidth: `${CHECKBOX_WIDTH}px`,
+                        maxWidth: `${CHECKBOX_WIDTH}px`,
                         left: "0px",
                       }}
                     >
@@ -682,86 +686,91 @@ function DynamicTableInner<T extends Record<string, unknown>>(
               </thead>
 
               <tbody>
-                {data.length > 0
-                  ? data.map((row, rowIndex) => {
-                      const rowId = getRowId(row);
-                      return (
-                        <tr
-                          key={rowId}
-                          className={getRowClasses(row, rowIndex)}
-                        >
-                          {selectable && (
-                            <td
-                              className={getCheckboxCellClasses(
-                                row,
-                                rowIndex,
-                                fixedLeftColumns.length === 0
-                              )}
-                              style={{
-                                width: "48px",
-                                minWidth: "48px",
-                                maxWidth: "48px",
-                                left: "0px",
-                              }}
-                            >
-                              <Checkbox
-                                checked={selectedRows.has(rowId)}
-                                onChange={() => toggleRow(rowId)}
-                              />
-                            </td>
-                          )}
-
-                          {/* Fixed left columns with cumulative positioning */}
-                          {fixedLeftColumns.map((col, colIndex) =>
-                            renderTableCell(
-                              col,
-                              row,
-                              rowIndex,
-                              calculateFixedLeftPositions[colIndex],
-                              0,
-                              colIndex === fixedLeftColumns.length - 1,
-                              false
-                            )
-                          )}
-
-                          {/* Regular columns */}
-                          {regularColumns.map((col) =>
-                            renderTableCell(
-                              col,
-                              row,
-                              rowIndex,
-                              0,
-                              0,
-                              false,
-                              false
-                            )
-                          )}
-
-                          {/* Fixed right columns with cumulative positioning */}
-                          {fixedRightColumns.map((col, colIndex) =>
-                            renderTableCell(
-                              col,
-                              row,
-                              rowIndex,
-                              0,
-                              calculateFixedRightPositions[colIndex],
-                              false,
-                              colIndex === 0
-                            )
-                          )}
-                        </tr>
-                      );
-                    })
-                  : !loading && (
-                      <tr>
-                        <td
-                          colSpan={headers.length + (selectable ? 1 : 0)}
-                          className="py-4 text-center text-md text-gray-600"
-                        >
-                          No records found.
+                {isFirstLoad && loading ? (
+                  // Skeleton rows
+                  Array.from({ length: limit }).map((_, idx) => (
+                    <tr
+                      key={idx}
+                      className={
+                        stripeRows && idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                      }
+                    >
+                      {selectable && (
+                        <td className="px-2 py-2">
+                          <div className="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
                         </td>
+                      )}
+                      {headers.map((col, colIdx) => (
+                        <td key={colIdx} className="px-4 py-2">
+                          <div className="w-full h-4 bg-gray-200 rounded animate-pulse"></div>
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                ) : data.length > 0 ? (
+                  // Render normal rows here
+                  data.map((row, rowIndex) => {
+                    const rowId = getRowId(row);
+                    return (
+                      <tr key={rowId} className={getRowClasses(row, rowIndex)}>
+                        {selectable && (
+                          <td
+                            className={getCheckboxCellClasses(
+                              row,
+                              rowIndex,
+                              fixedLeftColumns.length === 0
+                            )}
+                            style={{
+                              width: `${CHECKBOX_WIDTH}px`,
+                              minWidth: `${CHECKBOX_WIDTH}px`,
+                              maxWidth: `${CHECKBOX_WIDTH}px`,
+                              left: "0px",
+                            }}
+                          >
+                            <Checkbox
+                              checked={selectedRows.has(rowId)}
+                              onChange={() => toggleRow(rowId)}
+                            />
+                          </td>
+                        )}
+                        {fixedLeftColumns.map((col, colIndex) =>
+                          renderTableCell(
+                            col,
+                            row,
+                            rowIndex,
+                            calculateFixedLeftPositions[colIndex],
+                            0,
+                            colIndex === fixedLeftColumns.length - 1,
+                            false
+                          )
+                        )}
+                        {regularColumns.map((col) =>
+                          renderTableCell(col, row, rowIndex, 0, 0)
+                        )}
+                        {fixedRightColumns.map((col, colIndex) =>
+                          renderTableCell(
+                            col,
+                            row,
+                            rowIndex,
+                            0,
+                            calculateFixedRightPositions[colIndex],
+                            false,
+                            colIndex === 0
+                          )
+                        )}
                       </tr>
-                    )}
+                    );
+                  })
+                ) : !loading ? (
+                  <tr>
+                    <td
+                      colSpan={headers.length + (selectable ? 1 : 0)}
+                      className="py-4 text-center text-md text-gray-600"
+                    >
+                      No records found.
+                    </td>
+                  </tr>
+                ) : null}
               </tbody>
             </table>
           </div>
