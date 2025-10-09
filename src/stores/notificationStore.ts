@@ -267,9 +267,9 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
       setLoading(true);
       let response;
       if (UserService.isAdmin()) {
-        response = await NotificationService.getAllNotifications();
+        response = await NotificationService.getAllUnreadNotifications();
       } else {
-        response = await NotificationService.getNotifications();
+        response = await NotificationService.getUnreadNotifications();
       }
 
       if (response.success && response.data) {

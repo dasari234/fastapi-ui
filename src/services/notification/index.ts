@@ -24,6 +24,21 @@ class NotificationService {
     );
   }
 
+  public async getUnreadNotifications(): Promise<NotificationResponse> {
+    const response = await UseApi.request<NotificationResponse>(
+      HttpMethod.GET,
+      "/notifications?unread_only=true",
+      {}
+    );
+
+    return (
+      response ?? {
+        success: false,
+        data: { notifications: [] },
+      }
+    );
+  }
+
   public async notificationsMarkAllRead<T>(): Promise<T | undefined> {
     return UseApi.request(HttpMethod.PUT, `/notifications/read-all`, {});
   }
@@ -36,6 +51,21 @@ class NotificationService {
     const response = await UseApi.request<NotificationResponse>(
       HttpMethod.GET,
       "/notifications/admin/all",
+      {}
+    );
+
+    return (
+      response ?? {
+        success: false,
+        data: { notifications: [] },
+      }
+    );
+  }
+
+    public async getAllUnreadNotifications(): Promise<NotificationResponse> {
+    const response = await UseApi.request<NotificationResponse>(
+      HttpMethod.GET,
+      "/notifications/admin/all?unread_only=true",
       {}
     );
 

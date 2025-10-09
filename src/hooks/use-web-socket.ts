@@ -56,7 +56,7 @@ export const useWebSocket = (url: string, token: string | null) => {
           if (!notif || !id) return;
 
           // Ignore WebSocket temp IDs
-          if (typeof id === "string" && id.startsWith("ws_")) {
+          if (typeof id === "string" && (id.startsWith("ws_") || (id.startsWith("admin_ws_")))) {
             return;
           }
 

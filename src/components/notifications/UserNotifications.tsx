@@ -19,6 +19,8 @@ import type { Notification } from "../../types";
 export const UserNotifications = () => {
   const [isOpen, setIsOpen] = useState(false);
   const notificationRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const hasFetchedOnceRef = useRef(false);
   const [newNotifications, setNewNotifications] = useState<Set<number>>(
     new Set()
   );
@@ -55,12 +57,13 @@ export const UserNotifications = () => {
     }
   }, [fetchNotifications]);
 
-  // Fetch notifications when component mounts or when panel opens
   useEffect(() => {
-    if (isOpen && notifications.length === 0 && !isLoading) {
-      fetchNotifications();
+    if (isOpen && !hasFetchedOnceRef.current && !isLoading) {
+      fetchNotifications().then(() => {
+        hasFetchedOnceRef.current = true;
+      });
     }
-  }, [isOpen, fetchNotifications, notifications.length, isLoading]);
+  }, [isOpen, isLoading, fetchNotifications]);
 
   // Clear new notifications indicator when panel closes
   useEffect(() => {
@@ -112,6 +115,11 @@ export const UserNotifications = () => {
     setNewNotifications(new Set());
   }, [clearNotifications]);
 
+  const handlePanelClick = (e: React.MouseEvent) => {
+    // Prevent the click from bubbling to the document and triggering useClickOutside
+    e.stopPropagation();
+  };
+
   const formatTime = (timestamp: string) => {
     return new Date(timestamp).toLocaleTimeString();
   };
@@ -143,7 +151,7 @@ export const UserNotifications = () => {
       setIsOpen(false);
     },
     undefined,
-    [notificationRef]
+    [notificationRef, panelRef]
   );
 
   return (
@@ -170,7 +178,11 @@ export const UserNotifications = () => {
 
       {/* Notifications Panel */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 flex flex-col">
+        <div
+          className="absolute right-0 top-full mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 flex flex-col"
+          ref={panelRef}
+          onClick={handlePanelClick}
+        >
           {/* Header */}
           <div className="flex items-center justify-between p-2 border-b border-gray-200">
             <h3 className="flex items-center text-lg font-semibold text-gray-900">
@@ -181,10 +193,6 @@ export const UserNotifications = () => {
                 ) : (
                   <WifiOff className="w-3 h-3 text-red-500 mr-1" />
                 )}
-                {/* <span>
-                  {isConnected ? "Connected" : "Disconnected"}
-                  {!token && " (No token)"}
-                </span> */}
               </div>
             </h3>
             <div className="flex items-center space-x-2">
@@ -199,9 +207,7 @@ export const UserNotifications = () => {
 
           <div className="p-3 border-t border-gray-200 bg-gray-50">
             <div className="flex justify-between items-center text-xs text-gray-500">
-              <span>
-                {notifications.length} total, {unreadCount} unread
-              </span>
+              <span>{unreadCount} unread</span>
               <div className="flex items-center space-x-2">
                 {notifications.length > 0 && (
                   <>
