@@ -1,6 +1,12 @@
-import type { T } from "vitest/dist/chunks/environment.d.cL3nLXbE.js";
+import { getLocalStorage } from "../../lib/utils";
 import { HttpMethod } from "../../types";
 import UseApi from "../use-api";
+
+interface User {
+  id: string;
+  name: string;
+  role: string;
+}
 
 class UserService {
   public async register<T>(
@@ -12,7 +18,7 @@ class UserService {
     return response;
   }
 
-  public async getUser(): Promise<T | undefined> {
+  public async getUser<T>(): Promise<T | undefined> {
     return UseApi.request(HttpMethod.GET, "/users/me", {});
   }
 
@@ -35,6 +41,22 @@ class UserService {
     return UseApi.request(HttpMethod.POST, "/users/change-password", {
       data: payload,
     });
+  }
+
+  isAdmin(): boolean {
+    const storedUser = getLocalStorage<User>("user");
+    if (!storedUser) return false;
+    return storedUser?.role === "admin";
+  }
+
+  currentUserId() {
+    const storedUser = getLocalStorage<User>("user");
+    return storedUser?.id;
+  }
+
+  accessToken(): string | null {
+    const storedToken = getLocalStorage<string | undefined>("accessToken");
+    return storedToken ?? null
   }
 }
 

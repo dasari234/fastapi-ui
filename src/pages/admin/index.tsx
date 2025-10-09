@@ -246,7 +246,6 @@ const AdminDashboardPage: React.FC = () => {
       <Modal
         open={deleteModal}
         onClose={() => setDeleteModal(false)}
-        title="Delete User"
         showCloseButton={true}
       >
         <div className="max-h-[80vh] overflow-auto p-2">

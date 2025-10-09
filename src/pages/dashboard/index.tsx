@@ -186,10 +186,10 @@ const DashboardPage: React.FC = () => {
       label: "Actions",
       sortable: false,
       fixed: "right",
-      width: "150px",
+      width: "120px",
       render: (row: FileRow) => (
-        <div className="flex gap-2">
-          <Tooltip content="View" maxWidth="max-w-xl">
+        <div className="flex gap-2 relative">
+          <Tooltip content="View" maxWidth="max-w-xl" >
             <Button
               variant="ghost"
               size="icon"
@@ -286,7 +286,6 @@ const DashboardPage: React.FC = () => {
       <Modal
         open={deleteModal}
         onClose={() => setDeleteModal(false)}
-        title="Delete User"
         showCloseButton={true}
       >
         <div className="max-h-[80vh] overflow-auto p-2">

@@ -39,7 +39,6 @@ const Pagination: React.FC<PaginationProps> = ({
     </PaginationItem>
   );
 
-
   const renderPageNumbers = () => {
     const totalVisible = 5;
     const pages: React.ReactNode[] = [];
@@ -69,10 +68,12 @@ const Pagination: React.FC<PaginationProps> = ({
     return pages;
   };
 
-
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -80,8 +81,7 @@ const Pagination: React.FC<PaginationProps> = ({
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
- 
-    useEffect(() => {
+  useEffect(() => {
     if (isOpen && dropdownRef.current) {
       const rect = dropdownRef.current.getBoundingClientRect();
       const windowHeight = window.innerHeight;
@@ -92,10 +92,25 @@ const Pagination: React.FC<PaginationProps> = ({
       } else {
         setIsOpen(false);
       }
+
+      if (isOpen) {
+        const scrollbarWidth =
+          window.innerWidth - document.documentElement.clientWidth;
+        document.body.style.overflow = "hidden";
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+      } else {
+        document.body.style.overflow = "";
+        document.body.style.paddingRight = "";
+      }
+
+      return () => {
+        document.body.style.overflow = "";
+        document.body.style.paddingRight = "";
+      };
     }
   }, [isOpen]);
 
-const renderDropdown = () => (
+  const renderDropdown = () => (
     <div className="relative w-[80px]" ref={dropdownRef}>
       <div
         onClick={() => setIsOpen((prev) => !prev)}
@@ -110,7 +125,11 @@ const renderDropdown = () => (
           strokeWidth="1.5"
           stroke="currentColor"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15l3.75 3.75 3.75-3.75m-7.5-6l3.75-3.75 3.75 3.75" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M8.25 15l3.75 3.75 3.75-3.75m-7.5-6l3.75-3.75 3.75 3.75"
+          />
         </svg>
       </div>
 
@@ -144,7 +163,11 @@ const renderDropdown = () => (
                       stroke="currentColor"
                       strokeWidth={2}
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   )}
                 </li>
@@ -168,7 +191,9 @@ const renderDropdown = () => (
         {renderPageNumbers()}
       </PaginationContent>
       <PaginationNext
-        onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
+        onClick={() =>
+          currentPage < totalPages && onPageChange(currentPage + 1)
+        }
         className={`cursor-pointer h-7 px-5 flex items-center justify-center ${
           currentPage === totalPages ? "opacity-40 pointer-events-none" : ""
         }`}
@@ -179,4 +204,3 @@ const renderDropdown = () => (
 };
 
 export default Pagination;
-

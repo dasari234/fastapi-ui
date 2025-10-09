@@ -582,6 +582,7 @@ function DynamicTableInner<T extends Record<string, unknown>>(
       </th>
     );
   };
+  
 
   return (
     <div className="relative">
@@ -628,12 +629,12 @@ function DynamicTableInner<T extends Record<string, unknown>>(
           {/* Scrollable table container with proper overflow handling */}
           <div
             ref={tableContainerRef}
-            className="overflow-auto relative border border-gray-200 rounded-lg bg-white"
+            className="relative border border-gray-200 rounded-lg bg-white overflow-auto"
             style={{
               maxHeight: fixedHeader ? maxHeight : "none",
             }}
           >
-            <table className="min-w-full bg-white relative">
+            <table className="w-full table-fixed bg-white relative">
               <thead className="bg-gray-100">
                 <tr>
                   {selectable && (
