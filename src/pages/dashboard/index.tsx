@@ -117,7 +117,7 @@ const DashboardPage: React.FC = () => {
       key: "original_filename",
       label: "File Name",
       sortable: true,
-      fixed: "left",
+      // fixed: "left",
       width: "150px",
       truncate: true,
     },
@@ -192,9 +192,10 @@ const DashboardPage: React.FC = () => {
       label: "Actions",
       sortable: false,
       fixed: "right",
-      width: "120px",
+      align: "center",
+      width: "110px",
       render: (row: FileRow) => (
-        <div className="flex gap-2 relative">
+        <div className="flex gap-3 relative ml-2">
           <Tooltip content="View" maxWidth="max-w-xl">
             <Button
               variant="ghost"
@@ -248,7 +249,7 @@ const DashboardPage: React.FC = () => {
           responseKey="records"
           fixedHeader={true}
           maxHeight="65vh"
-          // selectable={true}
+          selectable={true}
         />
       </div>
 

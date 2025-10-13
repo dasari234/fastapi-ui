@@ -321,8 +321,7 @@ function TableInner<T extends Record<string, unknown>>(
     const isSelected = selectedRows.has(rowId);
 
     const baseClasses = [
-      "px-4 py-2 text-sm border-b border-gray-300",
-      selectable && "pl-0",
+      "px-2 py-2 text-sm border-b border-gray-300",
       isHeader ? "font-semibold text-gray-700" : "text-gray-700",
       column.truncate && "truncate",
       "overflow-hidden",
@@ -359,8 +358,7 @@ function TableInner<T extends Record<string, unknown>>(
     isFirstFixedRight: boolean = false
   ) => {
     const baseClasses = [
-      "px-4 py-2 text-sm font-semibold text-gray-700 border-b-2 border-gray-300",
-      selectable && "pl-0",
+      "px-2 py-2 text-sm font-semibold text-gray-700 border-b-2 border-gray-300",
       "group cursor-pointer select-none",
       column.truncate && "truncate",
       "overflow-hidden",
@@ -397,7 +395,7 @@ function TableInner<T extends Record<string, unknown>>(
     }
 
     if (isLastFixedLeft) {
-      baseClasses.push("shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)]");
+      baseClasses.push("shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)] after:absolute after:right-0 after:top-0 after:h-full after:w-[2px] after:bg-gray-300");
     }
 
     return baseClasses.join(" ");
@@ -423,7 +421,7 @@ function TableInner<T extends Record<string, unknown>>(
     }
 
     if (isLastFixedLeft) {
-      baseClasses.push("shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)]");
+      baseClasses.push("shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)] after:absolute after:right-0 after:top-0 after:h-full after:w-[2px] after:bg-gray-300");
     }
 
     return baseClasses.join(" ");
@@ -448,7 +446,7 @@ function TableInner<T extends Record<string, unknown>>(
 
     const cellContent = column.truncate ? (
       <div
-        className="truncate w-full"
+        className={`truncate w-full`}
         title={typeof value === "string" ? value : undefined}
       >
         {value !== undefined && value !== null ? value : ""}
