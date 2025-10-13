@@ -321,7 +321,7 @@ function TableInner<T extends Record<string, unknown>>(
     const isSelected = selectedRows.has(rowId);
 
     const baseClasses = [
-      "px-4 py-2 text-sm border-b",
+      "px-4 py-2 text-sm border-b border-gray-300",
       selectable && "pl-0",
       isHeader ? "font-semibold text-gray-700" : "text-gray-700",
       column.truncate && "truncate",
@@ -340,13 +340,13 @@ function TableInner<T extends Record<string, unknown>>(
       baseClasses.push("sticky left-0 z-20");
       if (isLastFixedLeft)
         baseClasses.push(
-          "after:absolute after:right-0 after:top-0 after:h-full after:w-[1px] after:bg-gray-300"
+          "after:absolute after:right-0 after:top-0 after:h-full after:w-[2px] after:bg-gray-300"
         );
     } else if (column.fixed === "right") {
       baseClasses.push("sticky right-0 z-20");
       if (isFirstFixedRight)
         baseClasses.push(
-          "before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-gray-300"
+          "before:absolute before:left-0 before:top-0 before:h-full before:w-[2px] before:bg-gray-300"
         );
     }
 
@@ -359,7 +359,7 @@ function TableInner<T extends Record<string, unknown>>(
     isFirstFixedRight: boolean = false
   ) => {
     const baseClasses = [
-      "px-4 py-2 text-sm font-semibold text-gray-700 border-b",
+      "px-4 py-2 text-sm font-semibold text-gray-700 border-b-2 border-gray-300",
       selectable && "pl-0",
       "group cursor-pointer select-none",
       column.truncate && "truncate",
@@ -376,13 +376,13 @@ function TableInner<T extends Record<string, unknown>>(
       baseClasses.push("sticky left-0 z-40");
       if (isLastFixedLeft)
         baseClasses.push(
-          "after:absolute after:right-0 after:top-0 after:h-full after:w-[1px] after:bg-gray-300"
+          "after:absolute after:right-0 after:top-0 after:h-full after:w-[2px] after:bg-gray-300"
         );
     } else if (column.fixed === "right") {
       baseClasses.push("sticky right-0 z-40");
       if (isFirstFixedRight)
         baseClasses.push(
-          "before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-gray-300"
+          "before:absolute before:left-0 before:top-0 before:h-full before:w-[2px] before:bg-gray-300"
         );
     }
 
@@ -390,7 +390,7 @@ function TableInner<T extends Record<string, unknown>>(
   };
 
   const getCheckboxHeaderClasses = (isLastFixedLeft: boolean) => {
-    const baseClasses = ["px-2 py-2 border-b bg-gray-100 sticky left-0 z-40"];
+    const baseClasses = ["px-2 py-2 border-b-2 bg-gray-100 sticky left-0 z-40 border-gray-300"];
 
     if (fixedHeader) {
       baseClasses.push("top-0");
@@ -412,7 +412,7 @@ function TableInner<T extends Record<string, unknown>>(
     const isSelected = selectedRows.has(rowId);
 
     const baseClasses = [
-      "px-2 py-2 border-b sticky left-0 z-20 transition-colors duration-150",
+      "px-2 py-2 border-b sticky left-0 z-20 transition-colors duration-150 border-gray-300",
       "group-hover:bg-blue-50",
     ];
 
@@ -629,7 +629,7 @@ function TableInner<T extends Record<string, unknown>>(
           {/* Scrollable table container with proper overflow handling */}
           <div
             ref={tableContainerRef}
-            className="relative border border-gray-200 rounded-lg bg-white overflow-auto"
+            className="relative border border-gray-300 rounded-lg bg-white overflow-auto"
             style={{
               maxHeight: fixedHeader ? maxHeight : "none",
             }}

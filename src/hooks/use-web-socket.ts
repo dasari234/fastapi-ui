@@ -60,10 +60,8 @@ export const useWebSocket = (url: string, token: string | null) => {
             return;
           }
 
-          // Role filtering (admin vs user)
           if (!isAdmin && notif.user_id !== Number(currentUserId)) return;
 
-          // Duplicate guard
           if (recentlyProcessed.has(id)) return;
 
           recentlyProcessed.add(id);

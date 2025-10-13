@@ -4,8 +4,6 @@ import {
   Loader2,
   Sparkles,
   Trash2,
-  Wifi,
-  WifiOff,
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -41,7 +39,7 @@ export const UserNotifications = () => {
   const token = UserService.accessToken();
   const wsUrl = `${import.meta.env.VITE_APP_WS_URL}/notifications/ws`;
 
-  const { markAsRead: wsMarkAsRead, isConnected } = useWebSocket(wsUrl, token);
+  const { markAsRead: wsMarkAsRead } = useWebSocket(wsUrl, token);
 
   useEffect(() => {
     return () => {
@@ -116,7 +114,6 @@ export const UserNotifications = () => {
   }, [clearNotifications]);
 
   const handlePanelClick = (e: React.MouseEvent) => {
-    // Prevent the click from bubbling to the document and triggering useClickOutside
     e.stopPropagation();
   };
 
@@ -158,7 +155,7 @@ export const UserNotifications = () => {
     <div className="relative">
       {/* Notification Bell */}
       <button
-        className="relative p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors duration-200"
+        className="cursor-pointer relative p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors duration-200"
         ref={notificationRef}
         onClick={() => setIsOpen(!isOpen)}
         disabled={isLoading}
@@ -187,13 +184,13 @@ export const UserNotifications = () => {
           <div className="flex items-center justify-between p-2 border-b border-gray-200">
             <h3 className="flex items-center text-lg font-semibold text-gray-900">
               {UserService.isAdmin() ? "All Notifications" : "Notifications"}
-              <div className="flex items-center ml-2">
+              {/* <div className="flex items-center ml-2">
                 {isConnected ? (
                   <Wifi className="w-3 h-3 text-green-500 mr-1" />
                 ) : (
                   <WifiOff className="w-3 h-3 text-red-500 mr-1" />
                 )}
-              </div>
+              </div> */}
             </h3>
             <div className="flex items-center space-x-2">
               <button
