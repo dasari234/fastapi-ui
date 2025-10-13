@@ -3,16 +3,16 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import FileUpload from "../../components/fileupload/FileUpload";
 import PDFView from "../../components/pdf-view/PDFView";
-import type { DynamicTableRef } from "../../components/table/DynamicTable";
-import DynamicTable from "../../components/table/DynamicTable";
 import { Button } from "../../components/ui/Button";
 import Modal from "../../components/ui/modal/Modal";
+import type { TableRef } from "../../components/ui/table";
+import Table from "../../components/ui/table";
 import Tooltip from "../../components/ui/Tooltip";
 import { downloadFile, formatDate } from "../../lib/utils";
 import S3Service from "../../services/s3-service";
 
 const AdminDashboardPage: React.FC = () => {
-  const tableRef = useRef<DynamicTableRef>(null);
+  const tableRef = useRef<TableRef>(null);
   const [rowdata, setRowdata] = useState<FileRow | null>(null);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -204,7 +204,7 @@ const AdminDashboardPage: React.FC = () => {
       <div className="flex items-center justify-center mb-6">
         <FileUpload onSuccess={handleUploadSuccess} />
       </div>
-      <DynamicTable<FileRow>
+      <Table<FileRow>
         url="/files"
         limit={10}
         ref={tableRef}

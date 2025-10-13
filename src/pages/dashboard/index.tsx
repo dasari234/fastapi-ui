@@ -3,19 +3,19 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import FileUpload from "../../components/fileupload/FileUpload";
 import PDFView from "../../components/pdf-view/PDFView";
-import type {
-  Column,
-  DynamicTableRef,
-} from "../../components/table/DynamicTable";
-import DynamicTable from "../../components/table/DynamicTable";
 import { Button } from "../../components/ui/Button";
 import Modal from "../../components/ui/modal/Modal";
+import type {
+  Column,
+  TableRef,
+} from "../../components/ui/table";
+import Table from "../../components/ui/table";
 import Tooltip from "../../components/ui/Tooltip";
 import { downloadFile, formatDate } from "../../lib/utils";
 import S3Service from "../../services/s3-service";
 
 const DashboardPage: React.FC = () => {
-  const tableRef = useRef<DynamicTableRef>(null);
+  const tableRef = useRef<TableRef>(null);
   const [rowdata, setRowdata] = useState<FileRow | null>(null);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -240,7 +240,7 @@ const DashboardPage: React.FC = () => {
 
       {/* Add a wrapper div with proper styling for fixed columns */}
       <div className="border border-gray-200 rounded-lg shadow-sm bg-white">
-        <DynamicTable<FileRow>
+        <Table<FileRow>
           url="/files"
           limit={10}
           ref={tableRef}

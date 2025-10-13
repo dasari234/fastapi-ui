@@ -3,11 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 
 import { DynamicForm, type Field } from "../../../components/DynamicForm";
-import DynamicTable, {
-  type DynamicTableRef,
-} from "../../../components/table/DynamicTable";
 import { Button } from "../../../components/ui/Button";
 import Modal from "../../../components/ui/modal/Modal";
+import DynamicTable, {
+  type DynamicTableRef,
+} from "../../../components/ui/table";
 import Tooltip from "../../../components/ui/Tooltip";
 import { useAuthContext } from "../../../hooks";
 import UserService from "../../../services/userService";

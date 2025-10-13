@@ -8,13 +8,13 @@ import React, {
   useState,
 } from "react";
 import { toast } from "react-toastify";
-import { buildUrlWithParams } from "../../lib/utils";
-import { UtilService } from "../../services/util-service";
-import { Button } from "../ui/Button";
-import { Checkbox } from "../ui/form/checkbox/Checkbox";
-import { LoadingOverlay } from "../ui/loading-overlay/LoadingOverlay";
-import Pagination from "../ui/pagination/Pagination";
-import SearchInput from "../ui/search/SearchInput";
+import { buildUrlWithParams } from "../../../lib/utils";
+import { UtilService } from "../../../services/util-service";
+import { Button } from "../Button";
+import { Checkbox } from "../form/checkbox/Checkbox";
+import { LoadingOverlay } from "../loading-overlay/LoadingOverlay";
+import Pagination from "../pagination/Pagination";
+import SearchInput from "../search/SearchInput";
 
 export interface Column<T> {
   key: keyof T | string;
@@ -42,13 +42,13 @@ interface ApiResponse<T> {
   };
 }
 
-export interface DynamicTableRef {
+export interface TableRef {
   refresh: () => void;
   getSelectedRows: () => void;
   clearSelection: () => void;
 }
 
-interface DynamicTableProps<T> {
+interface TableProps<T> {
   url: string;
   columns?: Column<T>[];
   limit?: number;
@@ -74,7 +74,7 @@ function getNestedValue(obj: unknown, path: string): unknown {
   }, obj);
 }
 
-function DynamicTableInner<T extends Record<string, unknown>>(
+function TableInner<T extends Record<string, unknown>>(
   {
     url,
     columns,
@@ -87,8 +87,8 @@ function DynamicTableInner<T extends Record<string, unknown>>(
     stripeRows = true,
     fixedHeader = false,
     maxHeight = "65vh",
-  }: DynamicTableProps<T>,
-  ref: React.Ref<DynamicTableRef>
+  }: TableProps<T>,
+  ref: React.Ref<TableRef>
 ) {
   const [data, setData] = useState<T[]>([]);
   const [selectedRows, setSelectedRows] = useState<Set<string | number>>(
@@ -787,8 +787,8 @@ function DynamicTableInner<T extends Record<string, unknown>>(
   );
 }
 
-const DynamicTable = forwardRef(DynamicTableInner) as <T>(
-  props: DynamicTableProps<T> & { ref?: React.Ref<DynamicTableRef> }
+const Table = forwardRef(TableInner) as <T>(
+  props: TableProps<T> & { ref?: React.Ref<TableRef> }
 ) => React.ReactElement;
 
-export default DynamicTable;
+export default Table;
