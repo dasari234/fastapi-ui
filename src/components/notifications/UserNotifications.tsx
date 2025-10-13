@@ -1,12 +1,12 @@
 import {
-    Bell,
-    CheckCircle,
-    Loader2,
-    Sparkles,
-    Trash2,
-    Wifi,
-    WifiOff,
-    X,
+  Bell,
+  CheckCircle,
+  Loader2,
+  Sparkles,
+  Trash2,
+  Wifi,
+  WifiOff,
+  X,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useWebSocket } from "../../hooks";
@@ -216,14 +216,14 @@ export const UserNotifications = () => {
                       disabled={unreadCount === 0}
                       className="cursor-pointer flex items-center p-2 text-gray-400 hover:text-green-600 transition-colors disabled:opacity-50"
                     >
-                      <CheckCircle className="w-3 h-3" />{" "}
+                      <CheckCircle className="size-3 mt-0.5" />
                       <span className="text-sm pl-1">Mark all as read</span>
                     </button>
                     <button
                       onClick={handleClearAll}
                       className="cursor-pointer flex items-center p-2 text-gray-400 hover:text-red-600 transition-colors"
                     >
-                      <Trash2 className="w-3 h-3" />{" "}
+                      <Trash2 className="size-3 mt-0.5" />
                       <span className="text-sm pl-1">Clear all</span>
                     </button>
                   </>

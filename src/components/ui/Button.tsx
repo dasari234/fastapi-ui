@@ -8,7 +8,8 @@ type ButtonVariant =
   | "outline"
   | "secondary"
   | "ghost"
-  | "link";
+  | "link"
+  | "round";
 
 type ButtonSize = "sm" | "md" | "lg" | "icon";
 
@@ -47,6 +48,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         "bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-400",
       ghost: "text-gray-700 hover:bg-gray-100 focus:ring-gray-300",
       link: "text-blue-600 underline-offset-4 hover:underline focus:ring-blue-400",
+      round: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 rounded-full",
     };
 
     const sizes: Record<ButtonSize, string> = {

@@ -99,7 +99,6 @@ export default function ProfilePage() {
   };
 
   const handleTabChange = (tabId: string) => {
-    console.log("Tab changed to:", tabId);
     setActiveTab(tabId);
   };
 

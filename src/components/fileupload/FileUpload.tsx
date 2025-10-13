@@ -59,10 +59,10 @@ const FileItem = ({ file, onRemove }: FileItemProps) => {
         <span className="text-sm text-gray-700 break-all">{file.name}</span>
       </div>
       <button
-        className="ml-2 p-1 text-gray-400 hover:text-red-500 transition rounded-full bg-gray-100 hover:bg-gray-200"
+        className="cursor-pointer ml-2 p-1 text-gray-400 hover:text-red-500 transition rounded-full bg-gray-100 hover:bg-gray-200"
         onClick={() => onRemove(file.name)}
       >
-        <X className="w-3 h-3" />
+        <X className="size-3" />
       </button>
     </div>
   );
@@ -224,11 +224,12 @@ export default function FileUpload({
       {files.length > 0 && (
         <Button
           onClick={uploadFiles}
-          className="flex gap-2 mt-4 w-full bg-blue-500 text-white p-2 rounded-md font-medium hover:bg-blue-600 transition disabled:bg-blue-300"
+          className="flex gap-2 mt-4 w-full"
           disabled={uploading}
           loading={uploading}
+          variant="round"
         >
-          Upload {files.length} File{files.length !== 1 ? "s" : ""}
+         Upload {files.length} File{files.length !== 1 ? "s" : ""}
         </Button>
       )}
     </div>

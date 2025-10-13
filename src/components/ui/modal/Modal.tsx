@@ -84,7 +84,7 @@ export default function Modal({
                 variant="ghost"
                 size="icon"
               >
-                <X className="w-4 h-4" />
+                <X className="size-4" />
               </Button>
             )}
             {title && (

@@ -25,14 +25,6 @@ export const useTabNavigation = ({
     const currentScroll = isHorizontal ? container.scrollLeft : container.scrollTop;
     const maxScroll = Math.max(0, scrollSize - clientSize);
 
-    console.log('Scroll state:', {
-      scrollSize,
-      clientSize,
-      currentScroll,
-      maxScroll,
-      hasOverflow: scrollSize > clientSize
-    });
-
     const shouldShowPrev = currentScroll > 10;
     const shouldShowNext = currentScroll < maxScroll - 10;
 

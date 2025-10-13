@@ -1,13 +1,9 @@
-"use client";
-
 import { AnimatePresence, motion } from "framer-motion";
+import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "../../../lib/utils";
 import { Button } from "../Button";
-
-
-
 
 interface DrawerProps {
   open: boolean;
@@ -100,7 +96,7 @@ export default function Drawer({
                 variant="ghost"
                 size="icon"
               >
-                ×
+               <X className="size-4" />
               </Button>
             )}
             {title && <h2 className="text-lg font-semibold mb-4">{title}</h2>}
