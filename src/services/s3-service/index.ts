@@ -3,9 +3,16 @@ import { HttpMethod } from "../../types";
 import UseApi from "../use-api";
 
 class S3Service {
-  fileUpload(payload: FormData): Promise<any> {
+  // fileUpload(payload: FormData): Promise<any> {
+  //   return UseApi.request(HttpMethod.POST, "/files/upload", {
+  //     data: payload,
+  //   });
+  // }
+
+  fileUpload(payload: FormData, config?: any): Promise<any> {
     return UseApi.request(HttpMethod.POST, "/files/upload", {
       data: payload,
+      ...config,
     });
   }
 

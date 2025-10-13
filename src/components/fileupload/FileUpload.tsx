@@ -7,6 +7,7 @@ import {
   X,
 } from "lucide-react";
 import { useRef, useState } from "react";
+import { cn } from "../../lib/utils";
 import S3Service from "../../services/s3-service";
 import { Button } from "../ui/Button";
 
@@ -17,6 +18,8 @@ const ALLOWED_EXTENSIONS = {
   audio: ["mp3", "wav", "ogg"],
 };
 
+type FileCategory = "image" | "document" | "video" | "audio" | null;
+
 const getFileCategory = (extension: unknown): FileCategory => {
   if (typeof extension !== "string") return null;
   for (const [category, exts] of Object.entries(ALLOWED_EXTENSIONS)) {
@@ -26,8 +29,6 @@ const getFileCategory = (extension: unknown): FileCategory => {
   }
   return null;
 };
-
-type FileCategory = "image" | "document" | "video" | "audio" | null;
 
 const FileTypeIcon = ({ category }: { category: FileCategory }) => {
   const icons = {
@@ -46,24 +47,45 @@ const FileTypeIcon = ({ category }: { category: FileCategory }) => {
 type FileItemProps = {
   file: File;
   onRemove: (name: string) => void;
+  progress?: number;
+  isUploading?: boolean;
 };
 
-const FileItem = ({ file, onRemove }: FileItemProps) => {
+const FileItem = ({
+  file,
+  onRemove,
+  progress = 0,
+  isUploading,
+}: FileItemProps) => {
   const ext = file.name.split(".").pop() || "";
   const category = getFileCategory(ext);
 
   return (
-    <div className="flex items-center justify-between p-2 border rounded-md bg-white shadow-sm">
-      <div className="flex items-center gap-2">
-        <FileTypeIcon category={category} />
-        <span className="text-sm text-gray-700 break-all">{file.name}</span>
+    <div className="flex flex-col gap-1 p-2 border rounded-md bg-white shadow-sm w-full">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <FileTypeIcon category={category} />
+          <span className="text-sm text-gray-700 break-all">{file.name}</span>
+        </div>
+        {!isUploading && (
+          <button
+            className="cursor-pointer ml-2 p-1 text-gray-400 hover:text-red-500 transition rounded-full bg-gray-100 hover:bg-gray-200"
+            onClick={() => onRemove(file.name)}
+          >
+            <X className="size-3" />
+          </button>
+        )}
       </div>
-      <button
-        className="cursor-pointer ml-2 p-1 text-gray-400 hover:text-red-500 transition rounded-full bg-gray-100 hover:bg-gray-200"
-        onClick={() => onRemove(file.name)}
-      >
-        <X className="size-3" />
-      </button>
+
+      {/* Progress Bar */}
+      {isUploading && (
+        <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+          <div
+            className={cn("h-2 rounded-full bg-blue-500 transition-all")}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
     </div>
   );
 };
@@ -76,7 +98,8 @@ export default function FileUpload({
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef(null);
+  const [progressMap, setProgressMap] = useState<Record<string, number>>({});
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   interface FileValidationResult {
     valid: File[];
@@ -90,51 +113,39 @@ export default function FileUpload({
     const { valid, invalid }: FileValidationResult =
       selectedFiles.reduce<FileValidationResult>(
         (acc, file) => {
-          const ext: string = file.name.split(".").pop() || "";
-          if (getFileCategory(ext)) {
-            acc.valid.push(file);
-          } else {
-            acc.invalid.push(file.name);
-          }
+          const ext = file.name.split(".").pop() || "";
+          if (getFileCategory(ext)) acc.valid.push(file);
+          else acc.invalid.push(file.name);
           return acc;
         },
         { valid: [], invalid: [] }
       );
 
-    if (invalid.length) {
-      setError(`Invalid file types: ${invalid.join(", ")}`);
-    } else {
-      setError(null);
-    }
+    if (invalid.length) setError(`Invalid file types: ${invalid.join(", ")}`);
+    else setError(null);
 
-    setFiles((prev: File[]) => {
+    setFiles((prev) => {
       const existingNames = new Set(prev.map((f) => f.name));
       const duplicates = valid.filter((f) => existingNames.has(f.name));
-
-      if (duplicates.length > 0) {
+      if (duplicates.length)
         setError(
-          `Duplicate file(s) not allowed: ${duplicates
-            .map((d) => d.name)
-            .join(", ")}`
+          `Duplicate file(s): ${duplicates.map((d) => d.name).join(", ")}`
         );
-      }
 
       const uniqueFiles = valid.filter((f) => !existingNames.has(f.name));
       return [...prev, ...uniqueFiles];
     });
 
-    // Reset the input so user can select the same file again later
-    if (fileInputRef.current) {
-      (fileInputRef.current as HTMLInputElement).value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  interface RemoveFileFn {
-    (name: string): void;
-  }
-
-  const removeFile: RemoveFileFn = (name) => {
-    setFiles((prev: File[]) => prev.filter((f: File) => f.name !== name));
+  const removeFile = (name: string) => {
+    setFiles((prev) => prev.filter((f) => f.name !== name));
+    setProgressMap((prev) => {
+      const copy = { ...prev };
+      delete copy[name];
+      return copy;
+    });
   };
 
   const uploadFiles = async () => {
@@ -143,38 +154,42 @@ export default function FileUpload({
       return;
     }
 
-    const formData = new FormData();
-
-    if (files.length > 1) {
-      files.forEach((file) => {
-        formData.append("files", file);
-      });
-      formData.append("folder", "documents");
-    } else {
-      formData.append("file", files[0]);
-    }
-
-    formData.append('version_comment', 'Updated with new data');
+    setUploading(true);
+    setError(null);
 
     try {
-      setUploading(true);
-      let result;
-      if (files.length > 1) {
-        result = await S3Service.multipleFileUpload(formData);
-      } else {
-        result = await S3Service.fileUpload(formData);
+      for (const file of files) {
+        await uploadSingleFile(file);
       }
-      if (onSuccess) {
-        onSuccess(result.message || "Files uploaded successfully!");
-      }
+
+      if (onSuccess) onSuccess("All files uploaded successfully!");
       setFiles([]);
-      setError(null);
+      setProgressMap({});
     } catch (err) {
       console.error("Upload failed:", err);
-      setError("Upload failed. Please try again.");
+      setError("Some files failed to upload. Please try again.");
     } finally {
       setUploading(false);
     }
+  };
+
+  const uploadSingleFile = (file: File): Promise<unknown> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("folder", "documents");
+    formData.append("version_comment", "Updated with new data");
+
+    return S3Service.fileUpload(formData, {
+      onUploadProgress: (progressEvent: ProgressEvent) => {
+        const percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / (progressEvent.total || 1)
+        );
+        setProgressMap((prev) => ({ ...prev, [file.name]: percentCompleted }));
+      },
+    }).catch((err) => {
+      setProgressMap((prev) => ({ ...prev, [file.name]: 0 }));
+      throw err;
+    });
   };
 
   return (
@@ -208,15 +223,16 @@ export default function FileUpload({
 
       {/* Files List */}
       {files.length > 0 && (
-        <div className="mt-4">
-          <h3 className="text-md font-medium text-gray-700 mb-2">
-            {files.length} File{files.length !== 1 ? "s" : ""} selected
-          </h3>
-          <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto">
-            {files.map((file) => (
-              <FileItem key={file.name} file={file} onRemove={removeFile} />
-            ))}
-          </div>
+        <div className="mt-4 space-y-2 max-h-64 overflow-y-auto">
+          {files.map((file) => (
+            <FileItem
+              key={file.name}
+              file={file}
+              onRemove={removeFile}
+              progress={progressMap[file.name] || 0}
+              isUploading={uploading}
+            />
+          ))}
         </div>
       )}
 
@@ -229,7 +245,9 @@ export default function FileUpload({
           loading={uploading}
           variant="round"
         >
-         Upload {files.length} File{files.length !== 1 ? "s" : ""}
+          {uploading
+            ? "Uploading..."
+            : `Upload ${files.length} File${files.length > 1 ? "s" : ""}`}
         </Button>
       )}
     </div>

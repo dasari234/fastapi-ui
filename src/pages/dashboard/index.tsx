@@ -195,7 +195,7 @@ const DashboardPage: React.FC = () => {
       align: "center",
       width: "110px",
       render: (row: FileRow) => (
-        <div className="flex gap-3 relative ml-2">
+        <div className="flex gap-3 relative ml-0.5">
           <Tooltip content="View" maxWidth="max-w-xl">
             <Button
               variant="ghost"
@@ -243,7 +243,7 @@ const DashboardPage: React.FC = () => {
       <div className="border border-gray-200 rounded-lg shadow-sm bg-white">
         <Table<FileRow>
           url="/files"
-          limit={10}
+          limit={15}
           ref={tableRef}
           columns={columns}
           responseKey="records"
