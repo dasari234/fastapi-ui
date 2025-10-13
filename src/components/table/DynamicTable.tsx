@@ -337,13 +337,13 @@ function DynamicTableInner<T extends Record<string, unknown>>(
     }
 
     if (column.fixed === "left") {
-      baseClasses.push("sticky left-0 z-40");
+      baseClasses.push("sticky left-0 z-20");
       if (isLastFixedLeft)
         baseClasses.push(
           "after:absolute after:right-0 after:top-0 after:h-full after:w-[1px] after:bg-gray-300"
         );
     } else if (column.fixed === "right") {
-      baseClasses.push("sticky right-0 z-40");
+      baseClasses.push("sticky right-0 z-20");
       if (isFirstFixedRight)
         baseClasses.push(
           "before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-gray-300"
@@ -373,13 +373,13 @@ function DynamicTableInner<T extends Record<string, unknown>>(
     }
 
     if (column.fixed === "left") {
-      baseClasses.push("sticky left-0 z-50");
+      baseClasses.push("sticky left-0 z-40");
       if (isLastFixedLeft)
         baseClasses.push(
           "after:absolute after:right-0 after:top-0 after:h-full after:w-[1px] after:bg-gray-300"
         );
     } else if (column.fixed === "right") {
-      baseClasses.push("sticky right-0 z-50");
+      baseClasses.push("sticky right-0 z-40");
       if (isFirstFixedRight)
         baseClasses.push(
           "before:absolute before:left-0 before:top-0 before:h-full before:w-[1px] before:bg-gray-300"

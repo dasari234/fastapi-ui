@@ -55,7 +55,8 @@ const DashboardPage: React.FC = () => {
     } catch (err) {
       setOpen(false);
       setLoading(false);
-      console.error("Failed to delete", err);
+      console.error("Failed to view file", err);
+      toast.error("Failed to view file");
     } finally {
       setLoading(false);
     }
@@ -71,7 +72,8 @@ const DashboardPage: React.FC = () => {
         tableRef.current?.refresh();
       }
     } catch (err) {
-      console.error("Failed to delete", err);
+      console.error("Failed to delete file", err);
+      toast.error("Failed to delete file");
     } finally {
       setIsLoading(false);
       setDeleteModal(false);
@@ -93,7 +95,11 @@ const DashboardPage: React.FC = () => {
         setIsDownload(false);
       }
     } catch (err) {
-      console.error("Failed to delete", err);
+      console.error("Failed to download file", err);
+      toast.error("Failed to download file");
+      setIsDownload(false);
+    } finally {
+      setIsDownload(false);
     }
   };
 
@@ -189,7 +195,7 @@ const DashboardPage: React.FC = () => {
       width: "120px",
       render: (row: FileRow) => (
         <div className="flex gap-2 relative">
-          <Tooltip content="View" maxWidth="max-w-xl" >
+          <Tooltip content="View" maxWidth="max-w-xl">
             <Button
               variant="ghost"
               size="icon"

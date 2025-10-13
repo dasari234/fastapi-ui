@@ -1,10 +1,10 @@
 import { Suspense, useEffect } from "react";
 import { BrowserRouter, useRoutes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+import PageLoadingSpinner from "./components/loading-spinner/LoadingSpinner";
 import { AuthProvider } from "./context/AuthProvider";
 import "./index.css";
 import { routes } from "./routes";
-import PageLoadingSpinner from "./components/loading-spinner/LoadingSpinner";
 
 const AppRoutes = () => {
   const routing = useRoutes(routes);
@@ -21,7 +21,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <ToastContainer position="top-right" autoClose={2000} />
+      <ToastContainer position="top-center" autoClose={2000} />
       <AuthProvider>
       <Suspense fallback={<PageLoadingSpinner />}>
         <AppRoutes />

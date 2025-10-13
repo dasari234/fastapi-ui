@@ -47,7 +47,7 @@ class NotificationService {
     return UseApi.request(HttpMethod.PUT, `/notifications/${id}/read`, {});
   }
 
-  public async getAllNotifications(): Promise<NotificationResponse> {
+  public async adminGetAllNotifications(): Promise<NotificationResponse> {
     const response = await UseApi.request<NotificationResponse>(
       HttpMethod.GET,
       "/notifications/admin/all",
@@ -62,7 +62,7 @@ class NotificationService {
     );
   }
 
-    public async getAllUnreadNotifications(): Promise<NotificationResponse> {
+  public async adminGetAllUnreadNotifications(): Promise<NotificationResponse> {
     const response = await UseApi.request<NotificationResponse>(
       HttpMethod.GET,
       "/notifications/admin/all?unread_only=true",
@@ -74,6 +74,20 @@ class NotificationService {
         success: false,
         data: { notifications: [] },
       }
+    );
+  }
+
+  public async adminNotificationsMarkAllRead<T>(): Promise<T | undefined> {
+    return UseApi.request(HttpMethod.PUT, `/notifications/admin/read-all`, {});
+  }
+
+  public async adminNotificationMarkAsRead<T>(
+    id: number
+  ): Promise<T | undefined> {
+    return UseApi.request(
+      HttpMethod.PUT,
+      `/notifications/admin/${id}/read`,
+      {}
     );
   }
 }

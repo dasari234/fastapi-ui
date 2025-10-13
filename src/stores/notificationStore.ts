@@ -267,7 +267,7 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
       setLoading(true);
       let response;
       if (UserService.isAdmin()) {
-        response = await NotificationService.getAllUnreadNotifications();
+        response = await NotificationService.adminGetAllUnreadNotifications();
       } else {
         response = await NotificationService.getUnreadNotifications();
       }
@@ -301,7 +301,12 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
       markAsRead(id);
 
       // Call API
-      await NotificationService.notificationMarkAsRead(id);
+
+      if (UserService.isAdmin()) {
+        await NotificationService.adminNotificationMarkAsRead(id);
+      } else {
+        await NotificationService.notificationMarkAsRead(id);
+      }
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
       get().fetchNotifications();
@@ -316,7 +321,11 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
       markAllAsRead();
 
       // Call API
-      await NotificationService.notificationsMarkAllRead();
+      if (UserService.isAdmin()) {
+        await NotificationService.adminNotificationsMarkAllRead;
+      } else {
+        await NotificationService.notificationsMarkAllRead();
+      }
     } catch (error) {
       console.error("Failed to mark all notifications as read:", error);
       get().fetchNotifications();

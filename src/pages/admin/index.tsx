@@ -52,7 +52,8 @@ const AdminDashboardPage: React.FC = () => {
     } catch (err) {
       setOpen(false);
       setLoading(false);
-      console.error("Failed to delete", err);
+      console.error("Failed to view file", err);
+      toast.error("Failed to view file");
     } finally {
       setLoading(false);
     }
@@ -68,7 +69,8 @@ const AdminDashboardPage: React.FC = () => {
         tableRef.current?.refresh();
       }
     } catch (err) {
-      console.error("Failed to delete", err);
+      console.error("Failed to delete file", err);
+      toast.error("Failed to deleted file");
     } finally {
       setIsLoading(false);
       setDeleteModal(false);
@@ -90,7 +92,11 @@ const AdminDashboardPage: React.FC = () => {
         setIsDownload(false);
       }
     } catch (err) {
-      console.error("Failed to delete", err);
+      console.error("Failed to download file", err);
+      toast.error("Failed to download file");
+      setIsDownload(false);
+    } finally {
+      setIsDownload(false);
     }
   };
 

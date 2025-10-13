@@ -206,7 +206,7 @@ export const UserNotifications = () => {
           </div>
 
           <div className="p-3 border-t border-gray-200 bg-gray-50">
-            <div className="flex justify-between items-center text-xs text-gray-500">
+            <div className="flex justify-between items-center text-sm text-gray-500">
               <span>{unreadCount} unread</span>
               <div className="flex items-center space-x-2">
                 {notifications.length > 0 && (
@@ -217,14 +217,14 @@ export const UserNotifications = () => {
                       className="cursor-pointer flex items-center p-2 text-gray-400 hover:text-green-600 transition-colors disabled:opacity-50"
                     >
                       <CheckCircle className="w-3 h-3" />{" "}
-                      <span className="text-[10px] pl-1">Mark all as read</span>
+                      <span className="text-sm pl-1">Mark all as read</span>
                     </button>
                     <button
                       onClick={handleClearAll}
                       className="cursor-pointer flex items-center p-2 text-gray-400 hover:text-red-600 transition-colors"
                     >
                       <Trash2 className="w-3 h-3" />{" "}
-                      <span className="text-[10px] pl-1">Clear all</span>
+                      <span className="text-sm pl-1">Clear all</span>
                     </button>
                   </>
                 )}
