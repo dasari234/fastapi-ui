@@ -1,14 +1,11 @@
 import { Download, FileSpreadsheet, Loader2, Trash2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import FileUpload from "../../components/fileupload/FileUpload";
 import PDFView from "../../components/pdf-view/PDFView";
 import { Button } from "../../components/ui/Button";
 import Modal from "../../components/ui/modal/Modal";
-import type {
-  Column,
-  TableRef,
-} from "../../components/ui/table";
+import type { Column, TableRef } from "../../components/ui/table";
 import Table from "../../components/ui/table";
 import Tooltip from "../../components/ui/Tooltip";
 import { downloadFile, formatDate } from "../../lib/utils";
@@ -22,6 +19,7 @@ const DashboardPage: React.FC = () => {
   const [isDownload, setIsDownload] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState<FileRow | null>();
+  const [selectedRows, setSelectedRows] = useState<FileRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   interface FileRow extends Record<string, unknown> {
@@ -233,6 +231,10 @@ const DashboardPage: React.FC = () => {
     },
   ];
 
+  const handleSelectionChange = useCallback((selectedRows: FileRow[]) => {
+    setSelectedRows(selectedRows);
+  }, []);
+
   return (
     <>
       <div className="flex items-center justify-center mb-6">
@@ -240,7 +242,16 @@ const DashboardPage: React.FC = () => {
       </div>
 
       {/* Add a wrapper div with proper styling for fixed columns */}
-      <div className="border border-gray-200 rounded-lg shadow-sm bg-white">
+      <div className="mb-4 text-xl flex">
+        My Uploads
+        {selectedRows && selectedRows.length > 0 && (
+          <div className="ml-2 text-gray-600">
+            ({selectedRows.length} files{selectedRows.length !== 1 ? "s" : ""}{" "}
+            selected)
+          </div>
+        )}
+      </div>
+      <div className="border border-gray-200 rounded-lg bg-white">
         <Table<FileRow>
           url="/files"
           limit={15}
@@ -250,6 +261,7 @@ const DashboardPage: React.FC = () => {
           fixedHeader={true}
           maxHeight="65vh"
           selectable={true}
+          onSelectionChange={handleSelectionChange}
         />
       </div>
 

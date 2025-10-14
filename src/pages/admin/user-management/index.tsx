@@ -1,12 +1,11 @@
-import { SquarePen, Trash2 } from "lucide-react";
+import { SquarePen, Trash2, UserRoundPlus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
-
 import { DynamicForm, type Field } from "../../../components/DynamicForm";
 import { Button } from "../../../components/ui/Button";
 import Modal from "../../../components/ui/modal/Modal";
-import DynamicTable, {
-  type DynamicTableRef,
+import Table, {
+  type TableRef,
 } from "../../../components/ui/table";
 import Tooltip from "../../../components/ui/Tooltip";
 import { useAuthContext } from "../../../hooks";
@@ -41,7 +40,7 @@ function UserManagementPage() {
   const [formType, setFormType] = useState<string>("add");
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>();
 
-  const tableRef = useRef<DynamicTableRef>(null);
+  const tableRef = useRef<TableRef>(null);
 
   const formFields: Field<Signup>[] = [
     {
@@ -237,10 +236,10 @@ function UserManagementPage() {
     <>
       <h1>User's List</h1>
 
-      <DynamicTable<UserRow>
+      <Table<UserRow>
         url="/users"
         ref={tableRef}
-        actionButton={[{ label: "Add User", onClick: handleAddClick }]}
+        actionButton={[{ label: "Add User", onClick: handleAddClick, icon:UserRoundPlus }]}
         columns={columns}
         responseKey="users"
         onSelectionChange={(selectedRows) => console.log(selectedRows)}

@@ -193,9 +193,7 @@ export default function FileUpload({
   };
 
   return (
-    <div className="w-full p-4 border rounded-md bg-gray-50 shadow-sm">
-      <h2 className="text-lg font-semibold mb-4 text-gray-800">File Upload</h2>
-
+    <div className="w-full">
       {/* Upload Input */}
       <label className="flex flex-col items-center justify-center gap-2 rounded-md p-6 cursor-pointer bg-gray-200 hover:bg-gray-300 transition border-2 border-dashed border-gray-400">
         <CloudUpload className="w-8 h-8 text-gray-600" />

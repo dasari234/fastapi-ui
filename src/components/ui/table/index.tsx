@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, ArrowUpDown, UserRoundPlus } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, type LucideIcon } from "lucide-react";
 import React, {
   forwardRef,
   useEffect,
@@ -29,6 +29,7 @@ export interface Column<T> {
 
 interface ActionButton {
   label: string;
+  icon?: LucideIcon;
   onClick: () => void;
 }
 
@@ -388,14 +389,18 @@ function TableInner<T extends Record<string, unknown>>(
   };
 
   const getCheckboxHeaderClasses = (isLastFixedLeft: boolean) => {
-    const baseClasses = ["px-2 py-2 border-b-2 bg-gray-100 sticky left-0 z-40 border-gray-300"];
+    const baseClasses = [
+      "px-2 py-2 border-b-2 bg-gray-100 sticky left-0 z-40 border-gray-300",
+    ];
 
     if (fixedHeader) {
       baseClasses.push("top-0");
     }
 
     if (isLastFixedLeft) {
-      baseClasses.push("shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)] after:absolute after:right-0 after:top-0 after:h-full after:w-[2px] after:bg-gray-300");
+      baseClasses.push(
+        "shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)] after:absolute after:right-0 after:top-0 after:h-full after:w-[2px] after:bg-gray-300"
+      );
     }
 
     return baseClasses.join(" ");
@@ -421,7 +426,9 @@ function TableInner<T extends Record<string, unknown>>(
     }
 
     if (isLastFixedLeft) {
-      baseClasses.push("shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)] after:absolute after:right-0 after:top-0 after:h-full after:w-[2px] after:bg-gray-300");
+      baseClasses.push(
+        "shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)] after:absolute after:right-0 after:top-0 after:h-full after:w-[2px] after:bg-gray-300"
+      );
     }
 
     return baseClasses.join(" ");
@@ -580,7 +587,6 @@ function TableInner<T extends Record<string, unknown>>(
       </th>
     );
   };
-  
 
   return (
     <div className="relative">
@@ -593,12 +599,12 @@ function TableInner<T extends Record<string, unknown>>(
           <div className="flex justify-between p-2 bg-white">
             <div className="flex gap-2 w-full">
               {/* Selection info */}
-              {selectable && selectedRows.size > 0 && (
+              {/* {selectable && selectedRows.size > 0 && (
                 <div className="mt-2 text-sm text-gray-600">
                   {selectedRows.size} row{selectedRows.size !== 1 ? "s" : ""}{" "}
                   selected
                 </div>
-              )}
+              )} */}
               <SearchInput
                 onSearch={handleSearch}
                 placeholder="Search files..."
@@ -606,28 +612,33 @@ function TableInner<T extends Record<string, unknown>>(
             </div>
 
             {actionButton &&
-              actionButton?.map((btn, idx) => (
-                <div
-                  className="flex w-full justify-end"
-                  key={`action-div-${idx}`}
-                >
-                  <Button
-                    key={`action-btn-${idx}`}
-                    onClick={btn.onClick}
-                    className="flex items-center gap-2"
-                    disabled={btn.onClick.length > 0 && selectedRows.size === 0}
+              actionButton?.map((btn, idx) => {
+                const IconComponent = btn.icon;
+                return(
+                  <div
+                    className="flex w-full justify-end"
+                    key={`action-div-${idx}`}
                   >
-                    <UserRoundPlus className="size-4" />{" "}
-                    <span>{btn.label}</span>
-                  </Button>
-                </div>
-              ))}
+                    <Button
+                      key={`action-btn-${idx}`}
+                      onClick={btn.onClick}
+                      className="flex items-center gap-2"
+                      disabled={
+                        btn.onClick.length > 0 && selectedRows.size === 0
+                      }
+                    >
+                      {IconComponent && <IconComponent className="size-4" />}
+                      <span>{btn.label}</span>
+                    </Button>
+                  </div>
+                );
+              })}
           </div>
 
           {/* Scrollable table container with proper overflow handling */}
           <div
             ref={tableContainerRef}
-            className="relative border border-gray-300 rounded-lg bg-white overflow-auto"
+            className="relative border-t border-b border-gray-300 bg-white overflow-auto"
             style={{
               maxHeight: fixedHeader ? maxHeight : "none",
             }}
