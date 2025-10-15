@@ -52,10 +52,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizes: Record<ButtonSize, string> = {
-      sm: "h-8 px-3 text-sm",
-      md: "h-10 px-4 text-sm",
-      lg: "h-12 px-6 text-base",
-      icon: "h-6 w-6 p-0",
+      sm: "h-9 px-3 text-sm",
+      md: "h-11 px-4 text-sm",
+      lg: "h-13 px-6 text-base",
+      icon: "size-6 p-0",
     };
 
     return (

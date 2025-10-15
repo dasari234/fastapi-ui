@@ -17,6 +17,7 @@ export interface Field<T extends object = Record<string, unknown>> {
 
 interface FormProps<T extends object> {
   buttonLabel: string;
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "round";
   formFields: Field<T>[];
   onSubmit: (values: T, form: UseFormReturnType<T>) => void | Promise<void>;
   initialValues?: Partial<T>;
@@ -28,6 +29,7 @@ export function DynamicForm<T extends object>({
   onSubmit,
   initialValues,
   buttonLabel,
+  variant,
   isLoading = false,
 }: FormProps<T>) {
 
@@ -102,7 +104,7 @@ export function DynamicForm<T extends object>({
         }
         return null;
       })}
-      <Button type="submit" loading={isLoading} disabled={isLoading} className="w-full h-10">
+      <Button type="submit" variant={variant} loading={isLoading} disabled={isLoading} className="w-full">
         {buttonLabel}
       </Button>
     </form>
