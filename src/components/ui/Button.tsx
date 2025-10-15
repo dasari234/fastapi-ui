@@ -26,7 +26,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     {
       className,
       variant = "default",
-      size = "md",
+      size = "sm",
       loading = false,
       fullWidth = false,
       children,

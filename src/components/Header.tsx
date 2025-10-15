@@ -13,7 +13,7 @@ export default function Header() {
   const [username, setUsername] = useState("");
   const [userRole, setUserRole] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
+  const isAdmin = UserService.isAdmin();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -71,7 +71,7 @@ export default function Header() {
     <header className="w-full bg-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <h1 className="text-xl font-bold text-blue-500">
-          <Link to={UserService.isAdmin() ? "/admin" : "/"}>Sentinel Demo</Link>
+          <Link to={isAdmin ? "/admin" : "/"}>Sentinel Demo</Link>
         </h1>
         {/* <Navbar />        */}
 

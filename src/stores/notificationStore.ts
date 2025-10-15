@@ -262,11 +262,11 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
   // API Methods
   fetchNotifications: async () => {
     const { setLoading, setNotifications } = get();
-
+    const isAdmin = UserService.isAdmin();
     try {
       setLoading(true);
       let response;
-      if (UserService.isAdmin()) {
+      if (isAdmin) {
         response = await NotificationService.adminGetAllUnreadNotifications();
       } else {
         response = await NotificationService.getUnreadNotifications();
@@ -286,7 +286,7 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
 
   markNotificationAsRead: async (notificationId: number | string) => {
     const { markAsRead } = get();
-
+    const isAdmin = UserService.isAdmin();
     try {
       const id =
         typeof notificationId === "string"
@@ -302,7 +302,7 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
 
       // Call API
 
-      if (UserService.isAdmin()) {
+      if (isAdmin) {
         await NotificationService.adminNotificationMarkAsRead(id);
       } else {
         await NotificationService.notificationMarkAsRead(id);
@@ -315,13 +315,13 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
 
   markAllNotificationsAsRead: async () => {
     const { markAllAsRead } = get();
-
+    const isAdmin = UserService.isAdmin();
     try {
       // Optimistically update UI
       markAllAsRead();
 
       // Call API
-      if (UserService.isAdmin()) {
+      if (isAdmin) {
         await NotificationService.adminNotificationsMarkAllRead;
       } else {
         await NotificationService.notificationsMarkAllRead();

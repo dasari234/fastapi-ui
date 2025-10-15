@@ -202,7 +202,7 @@ export default function FileUpload({
           or drag and drop files here
         </span>
         <span className="text-sm text-gray-500">
-          PDF, DOCX, IMG, up to 50MB
+          PDF, DOCX, up to 50MB
         </span>
         <input
           ref={fileInputRef}

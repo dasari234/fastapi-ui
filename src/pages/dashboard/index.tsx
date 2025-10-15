@@ -1,4 +1,10 @@
-import { Download, FileSpreadsheet, Loader2, Trash2 } from "lucide-react";
+import {
+  ArrowUpFromLine,
+  Download,
+  FileSpreadsheet,
+  Loader2,
+  Trash2,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import FileUpload from "../../components/fileupload/FileUpload";
@@ -16,6 +22,7 @@ const DashboardPage: React.FC = () => {
   const [rowdata, setRowdata] = useState<FileRow | null>(null);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isUpload, setIsUpload] = useState(false);
   const [isDownload, setIsDownload] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState<FileRow | null>();
@@ -115,7 +122,7 @@ const DashboardPage: React.FC = () => {
       key: "original_filename",
       label: "File Name",
       sortable: true,
-      // fixed: "left",
+      fixed: "left",
       width: "150px",
       truncate: true,
     },
@@ -235,11 +242,17 @@ const DashboardPage: React.FC = () => {
     setSelectedRows(selectedRows);
   }, []);
 
+  const handleActionClick = () => {
+    setIsUpload(true);
+  };
+
   return (
     <>
-      <div className="flex items-center justify-center mb-6">
-        <FileUpload onSuccess={handleUploadSuccess} />
-      </div>
+      {isUpload && (
+        <div className="flex items-center justify-center mb-6">
+          <FileUpload onSuccess={handleUploadSuccess} />
+        </div>
+      )}
 
       {/* Add a wrapper div with proper styling for fixed columns */}
       <div className="mb-4 text-xl flex">
@@ -260,8 +273,15 @@ const DashboardPage: React.FC = () => {
           responseKey="records"
           fixedHeader={true}
           maxHeight="65vh"
-          selectable={true}
           onSelectionChange={handleSelectionChange}
+          actionButton={[
+            {
+              label: "Upload",
+              onClick: handleActionClick,
+              icon: ArrowUpFromLine,
+              varient: "round",
+            },
+          ]}
         />
       </div>
 

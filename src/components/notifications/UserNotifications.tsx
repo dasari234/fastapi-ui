@@ -23,6 +23,7 @@ export const UserNotifications = () => {
     new Set()
   );
   const hasFetchedRef = useRef(false);
+  const isAdmin = UserService.isAdmin();
 
   const {
     notifications,
@@ -183,7 +184,7 @@ export const UserNotifications = () => {
           {/* Header */}
           <div className="flex items-center justify-between p-2 border-b border-gray-200">
             <h3 className="flex items-center text-lg font-semibold text-gray-900">
-              {UserService.isAdmin() ? "All Notifications" : "Notifications"}
+              {isAdmin ? "All Notifications" : "Notifications"}
               {/* <div className="flex items-center ml-2">
                 {isConnected ? (
                   <Wifi className="w-3 h-3 text-green-500 mr-1" />
@@ -269,7 +270,7 @@ export const UserNotifications = () => {
                     </div>
                   )}
 
-                  {UserService.isAdmin() && notification.user_details && (
+                  {isAdmin && notification.user_details && (
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-2">
                         <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">

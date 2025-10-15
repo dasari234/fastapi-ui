@@ -18,6 +18,7 @@ class WebSocketManager {
   private reconnectTimeout: NodeJS.Timeout | null = null;
   private messageCallbacks: Set<MessageCallback> = new Set();
   private isConnecting = false;
+  private isAdmin = UserService.isAdmin();
 
   private constructor() {}
 
@@ -70,7 +71,7 @@ class WebSocketManager {
           this.reconnectAttempts = 0;
           
           // Subscribe to channels if admin
-          if (UserService.isAdmin()) {
+          if (this.isAdmin) {
             this.ws?.send(JSON.stringify({
               type: "subscribe",
               channels: ["admin_notifications", "system_alerts"]

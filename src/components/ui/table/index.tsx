@@ -11,7 +11,7 @@ import { toast } from "react-toastify";
 import { buildUrlWithParams } from "../../../lib/utils";
 import { UtilService } from "../../../services/util-service";
 import { Button } from "../Button";
-import { Checkbox } from "../form/checkbox/Checkbox";
+import { Checkbox } from "../form/checkbox";
 import { LoadingOverlay } from "../loading-overlay/LoadingOverlay";
 import Pagination from "../pagination/Pagination";
 import SearchInput from "../search/SearchInput";
@@ -31,6 +31,7 @@ interface ActionButton {
   label: string;
   icon?: LucideIcon;
   onClick: () => void;
+  varient?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "round";
 }
 
 interface ApiResponse<T> {
@@ -596,7 +597,7 @@ function TableInner<T extends Record<string, unknown>>(
         <p className="text-red-500">{error}</p>
       ) : (
         <>
-          <div className="flex justify-between p-2 bg-white">
+          <div className="flex justify-between p-2 bg-white items-center">
             <div className="flex gap-2 w-full">
               {/* Selection info */}
               {/* {selectable && selectedRows.size > 0 && (
@@ -622,7 +623,8 @@ function TableInner<T extends Record<string, unknown>>(
                     <Button
                       key={`action-btn-${idx}`}
                       onClick={btn.onClick}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-1"
+                      variant={btn.varient ?? "default"}
                       disabled={
                         btn.onClick.length > 0 && selectedRows.size === 0
                       }
