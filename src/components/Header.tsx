@@ -50,7 +50,7 @@ export default function Header() {
     {
       label: "My Profile",
       onClick: () => navigate("/profile"),
-      icon: <CircleUser className="w-4 h-4" />,
+      icon: <CircleUser className="w-4 h-4 text-gray-400" />,
       iconPosition: "left" as const,
     },
     // {
@@ -69,7 +69,7 @@ export default function Header() {
 
   return (
     <header className="w-full bg-white shadow-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-4 h-14 flex items-center justify-between">
         <h1 className="text-xl font-bold text-blue-500">
           <Link to={isAdmin ? "/admin" : "/"}>Sentinel Demo</Link>
         </h1>
