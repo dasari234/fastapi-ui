@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useWebSocket } from "../../hooks";
+import { useBodyScrollLock } from "../../hooks/use-body-scroll-lock";
 import { useClickOutside } from "../../hooks/use-click-outside";
 import { websocketManager } from "../../lib/websocketManager";
 import UserService from "../../services/userService";
@@ -42,6 +43,8 @@ export const UserNotifications = () => {
 
   const { markAsRead: wsMarkAsRead } = useWebSocket(wsUrl, token);
 
+  useBodyScrollLock(isOpen);
+  
   useEffect(() => {
     return () => {
       // Clean up WebSocket when app unmounts
@@ -70,20 +73,6 @@ export const UserNotifications = () => {
       setNewNotifications(new Set());
     }
 
-    if (isOpen) {
-      const scrollbarWidth =
-        window.innerWidth - document.documentElement.clientWidth;
-      document.body.style.overflow = "hidden";
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    } else {
-      document.body.style.overflow = "";
-      document.body.style.paddingRight = "";
-    }
-
-    return () => {
-      document.body.style.overflow = "";
-      document.body.style.paddingRight = "";
-    };
   }, [isOpen]);
 
   const handleNotificationClick = useCallback(

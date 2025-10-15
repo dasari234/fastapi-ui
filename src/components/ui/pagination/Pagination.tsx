@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useBodyScrollLock } from "../../../hooks/use-body-scroll-lock";
 import {
   PaginationContent,
   PaginationEllipsis,
@@ -22,7 +23,8 @@ const Pagination: React.FC<PaginationProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
-
+  useBodyScrollLock(isOpen);
+  
   const PageButton = (page: number) => (
     <PaginationItem key={page}>
       <PaginationLink
@@ -92,21 +94,6 @@ const Pagination: React.FC<PaginationProps> = ({
       } else {
         setIsOpen(false);
       }
-
-      if (isOpen) {
-        const scrollbarWidth =
-          window.innerWidth - document.documentElement.clientWidth;
-        document.body.style.overflow = "hidden";
-        document.body.style.paddingRight = `${scrollbarWidth}px`;
-      } else {
-        document.body.style.overflow = "";
-        document.body.style.paddingRight = "";
-      }
-
-      return () => {
-        document.body.style.overflow = "";
-        document.body.style.paddingRight = "";
-      };
     }
   }, [isOpen]);
 

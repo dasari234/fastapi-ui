@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useBodyScrollLock } from "../../../hooks/use-body-scroll-lock";
 import { cn } from "../../../lib/utils";
 import { Button } from "../Button";
 
@@ -27,7 +28,7 @@ export default function Modal({
   disableBackdropBlur = false,
 }: ModalProps) {
   const overlayRef = useRef(null);
-
+  useBodyScrollLock(open);
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -35,12 +36,10 @@ export default function Modal({
 
     if (open) {
       document.addEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "hidden"; 
     }
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "auto";
     };
   }, [open, onClose]);
 
@@ -116,20 +115,20 @@ export default function Modal({
 //         Open Modal
 //       </button>
 
-    //   <Modal
-    //     open={open}
-    //     onClose={() => setOpen(false)}
-    //     title="Welcome"
-    //     closeOnOverlayClick
-    //   >
-    //     <p className="text-gray-700">This is a modal. Add your content here.</p>
-    //     <button
-    //       className="mt-4 bg-gray-800 text-white px-4 py-2 rounded"
-    //       onClick={() => setOpen(false)}
-    //     >
-    //       Close
-    //     </button>
-    //   </Modal>
+//   <Modal
+//     open={open}
+//     onClose={() => setOpen(false)}
+//     title="Welcome"
+//     closeOnOverlayClick
+//   >
+//     <p className="text-gray-700">This is a modal. Add your content here.</p>
+//     <button
+//       className="mt-4 bg-gray-800 text-white px-4 py-2 rounded"
+//       onClick={() => setOpen(false)}
+//     >
+//       Close
+//     </button>
+//   </Modal>
 //     </>
 //   );
 // }

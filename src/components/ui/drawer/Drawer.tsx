@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useBodyScrollLock } from "../../../hooks/use-body-scroll-lock";
 import { cn } from "../../../lib/utils";
 import { Button } from "../Button";
 
@@ -49,17 +50,17 @@ export default function Drawer({
 }: DrawerProps) {
   const overlayRef = useRef(null);
 
+  useBodyScrollLock(open);
+
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     if (open) {
       document.addEventListener("keydown", handleKey);
-      document.body.style.overflow = "hidden";
     }
     return () => {
       document.removeEventListener("keydown", handleKey);
-      document.body.style.overflow = "auto";
     };
   }, [open, onClose]);
 

@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { useBodyScrollLock } from "../../../hooks/use-body-scroll-lock";
 import { useClickOutside } from "../../../hooks/use-click-outside";
 import { cn } from "../../../lib/utils";
 import { Avatar } from "../avatar/Avatar";
@@ -61,22 +62,7 @@ export function Dropdown({
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    if (isOpen) {
-      const scrollbarWidth =
-        window.innerWidth - document.documentElement.clientWidth;
-      document.body.style.overflow = "hidden";
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    } else {
-      document.body.style.overflow = "";
-      document.body.style.paddingRight = "";
-    }
-
-    return () => {
-      document.body.style.overflow = "";
-      document.body.style.paddingRight = "";
-    };
-  }, [isOpen]);
+  useBodyScrollLock(isOpen);
 
   useClickOutside(
     () => {
@@ -110,7 +96,7 @@ export function Dropdown({
             ref={dropdownRef}
             style={positionStyle}
             className={cn(
-              "absolute mt-2 w-48 bg-white border rounded-md shadow-lg z-10",
+              "absolute mt-2 w-48 bg-white border border-gray-300 rounded-md shadow-lg z-10",
               className
             )}
             initial={{ opacity: 0, y: 10 }}
@@ -124,7 +110,7 @@ export function Dropdown({
                   <li
                     key={index}
                     onClick={handleItemClick(onClick)}
-                    className="px-4 py-3 text-sm text-slategray hover:bg-gray-100 cursor-pointer flex items-center space-x-2 border-b last:border-b-0"
+                    className="px-4 py-3 text-sm text-slategray hover:bg-gray-100 cursor-pointer flex items-center space-x-2 border-b last:border-b-0 border-gray-300"
                   >
                     {icon && iconPosition === "left" && (
                       <span className="mr-2">{icon}</span>
