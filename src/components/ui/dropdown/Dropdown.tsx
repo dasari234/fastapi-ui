@@ -84,7 +84,7 @@ export function Dropdown({
       <button
         ref={buttonRef}
         onClick={toggleDropdown}
-        className="flex items-center cursor-pointer space-x-2 px-4 py-2 transition duration-300 hover:bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="flex items-center cursor-pointer space-x-2 px-2 py-1 transition duration-300 hover:bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <Avatar initials={text} />
         <ChevronDown className="text-gray-400" />

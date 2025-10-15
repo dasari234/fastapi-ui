@@ -76,7 +76,7 @@ export default function Header() {
         {/* <Navbar />        */}
 
         {!isLoading && isAuthenticated && (
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-6">
             {/* Notifications */}
             <div className="flex items-center space-x-2">
               <UserNotifications />
