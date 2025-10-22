@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useBodyScrollLock } from "../../../hooks/use-body-scroll-lock";
+import { useBodyScrollLock } from "../../../hooks";
 import {
   PaginationContent,
   PaginationEllipsis,

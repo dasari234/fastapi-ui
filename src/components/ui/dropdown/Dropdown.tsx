@@ -2,8 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { useBodyScrollLock } from "../../../hooks/use-body-scroll-lock";
-import { useClickOutside } from "../../../hooks/use-click-outside";
+import { useBodyScrollLock, useClickOutside } from "../../../hooks";
 import { cn } from "../../../lib/utils";
 import { Avatar } from "../avatar/Avatar";
 

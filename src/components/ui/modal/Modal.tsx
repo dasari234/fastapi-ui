@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { useBodyScrollLock } from "../../../hooks/use-body-scroll-lock";
+import { useBodyScrollLock } from "../../../hooks";
 import { cn } from "../../../lib/utils";
 import { Button } from "../Button";
 

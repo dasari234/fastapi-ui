@@ -7,9 +7,7 @@ import {
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useWebSocket } from "../../hooks";
-import { useBodyScrollLock } from "../../hooks/use-body-scroll-lock";
-import { useClickOutside } from "../../hooks/use-click-outside";
+import { useBodyScrollLock, useClickOutside, useWebSocket } from "../../hooks";
 import { websocketManager } from "../../lib/websocketManager";
 import UserService from "../../services/userService";
 import { useNotificationStore } from "../../stores/notificationStore";

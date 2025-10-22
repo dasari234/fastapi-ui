@@ -74,8 +74,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {loading && (
           <Loader2
             className={cn(
-              "animate-spin shrink-0",
-              size === "sm" ? "w-3 h-3 mr-1" : "w-4 h-4 mr-2"
+              "animate-spin shrink-0 mt-0.5",
+              size === "sm" ? "w-4 h-4 mr-1" : "w-4 h-4 mr-2"
             )}
             aria-hidden="true"
           />
