@@ -1,8 +1,8 @@
 import { CircleUser, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuthContext } from "../hooks";
-import { getInitials } from "../lib/utils";
+import { useAuthContext, useScrollTrigger } from "../hooks";
+import { cn, getInitials } from "../lib/utils";
 import UserService from "../services/userService";
 import { UserNotifications } from "./notifications/UserNotifications";
 import { Dropdown } from "./ui/dropdown/Dropdown";
@@ -67,8 +67,15 @@ export default function Header() {
     },
   ];
 
+  const { trigger } = useScrollTrigger({ threshold: 30 });
+
   return (
-    <header className="w-full bg-white shadow-md sticky top-0 z-50">
+    <header
+      className={cn(
+        "w-full bg-white sticky top-0 z-50 transition-shadow duration-300",
+        trigger && "shadow-md"
+      )}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-4 h-14 flex items-center justify-between">
         <h1 className="text-xl font-bold text-blue-500">
           <Link to={isAdmin ? "/admin" : "/"}>Sentinel Demo</Link>
